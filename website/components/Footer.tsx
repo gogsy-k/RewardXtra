@@ -31,6 +31,7 @@ export default function Footer() {
       </div>
       <div className="border-t border-border/50 px-5 py-3 text-center text-xs text-muted">
         © {new Date().getFullYear()} CardWiz · {t("footer_no_cvv")}
+        <span className="mt-1 block">{t("aff_disclosure")}</span>
       </div>
     </footer>
   );
