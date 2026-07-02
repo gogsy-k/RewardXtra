@@ -2,7 +2,7 @@
  * affiliate.js tests.  Chalao:  node affiliate.test.js
  */
 const assert = require('assert');
-const { affiliateUrl, amazonLink, flipkartLink, cuelinksLink, DISCLOSURE } = require('./affiliate');
+const { affiliateUrl, amazonLink, flipkartLink, cuelinksLink, inrdealsLink, DISCLOSURE } = require('./affiliate');
 
 let passed = 0;
 function test(name, fn) {
@@ -52,15 +52,26 @@ test('affiliateUrl amazon -> Amazon Associates network', () => {
   assert.ok(r.url.includes('tag='));
 });
 
-test('affiliateUrl flipkart -> Flipkart Affiliate', () => {
-  const r = affiliateUrl('flipkart', 'https://www.flipkart.com/x/p/y');
+test('affiliateUrl flipkart with affid -> Flipkart Affiliate', () => {
+  const r = affiliateUrl('flipkart', 'https://www.flipkart.com/x/p/y', { flipkart: { affid: 'myaff' } });
   assert.strictEqual(r.network, 'Flipkart Affiliate');
 });
 
-test('affiliateUrl myntra (cuelinks disabled default) -> not affiliated', () => {
+test('affiliateUrl flipkart (no affid) -> INRDeals by default', () => {
+  const r = affiliateUrl('flipkart', 'https://www.flipkart.com/x/p/y');
+  assert.strictEqual(r.network, 'INRDeals');
+});
+
+test('inrdealsLink raw-appends the destination URL', () => {
+  const u = inrdealsLink('https://www.myntra.com/x?a=1', 'gur478927530');
+  assert.strictEqual(u, 'https://inrdeals.com/gur478927530/https://www.myntra.com/x?a=1');
+});
+
+test('affiliateUrl myntra -> INRDeals wrapped by default', () => {
   const r = affiliateUrl('myntra', 'https://www.myntra.com/x');
-  assert.strictEqual(r.affiliated, false);
-  assert.strictEqual(r.url, 'https://www.myntra.com/x');
+  assert.strictEqual(r.affiliated, true);
+  assert.strictEqual(r.network, 'INRDeals');
+  assert.ok(r.url.startsWith('https://inrdeals.com/gur478927530/'));
 });
 
 test('affiliateUrl myntra with cuelinks enabled -> wrapped', () => {

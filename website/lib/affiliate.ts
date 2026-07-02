@@ -27,6 +27,7 @@ export const SHOP_LINKS: { name: string; emoji: string; url: string }[] = [
   { name: "Flipkart", emoji: "🛒", url: "https://fktr.in/IIyS1ly" },
   { name: "Myntra", emoji: "👗", url: "https://myntr.it/zPuyfNe" },
   { name: "Ajio", emoji: "👕", url: "https://ajiio.in/T7czxq6" },
+  { name: "Nykaa", emoji: "💄", url: "https://inrdeals.com/gur478927530/https://www.nykaa.com" },
   { name: "Tata CLiQ", emoji: "🛍️", url: "https://bitli.in/fb1ggEV" },
   { name: "MakeMyTrip", emoji: "✈️", url: "https://bitli.in/X5Q4uhp" },
   { name: "Cleartrip", emoji: "🧳", url: "https://bitli.in/G9rfjrt" },
