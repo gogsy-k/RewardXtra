@@ -45,7 +45,8 @@
         "*://*.makemytrip.com/*",
         "*://*.cleartrip.com/*",
         "*://*.irctc.co.in/*",
-        "*://*.bookmyshow.com/*"
+        "*://*.bookmyshow.com/*",
+        "*://*.district.in/*"
       ],
       "js": ["debug.js", "i18n.js", "recommend.js", "offers.js", "captracker.js", "affiliate.js", "catalog.js", "content-detect.js"],
       "run_at": "document_idle",
@@ -73,7 +74,8 @@
         "*://*.makemytrip.com/*",
         "*://*.cleartrip.com/*",
         "*://*.irctc.co.in/*",
-        "*://*.bookmyshow.com/*"
+        "*://*.bookmyshow.com/*",
+        "*://*.district.in/*"
       ]
     }
   ]

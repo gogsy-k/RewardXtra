@@ -39,8 +39,9 @@ function detectSite(hostname) {
   if (isDomain(h, 'makemytrip.com')) return { merchant: 'MakeMyTrip', category: 'travel' };
   if (isDomain(h, 'cleartrip.com')) return { merchant: 'Cleartrip', category: 'travel' };
   if (isDomain(h, 'irctc.co.in')) return { merchant: 'IRCTC', category: 'travel' };
-  // Entertainment
+  // Entertainment / going-out
   if (isDomain(h, 'bookmyshow.com')) return { merchant: 'BookMyShow', category: 'entertainment' };
+  if (isDomain(h, 'district.in')) return { merchant: 'District', category: 'entertainment' }; // Zomato ka events/movies app
   return null;
 }
 
@@ -54,6 +55,7 @@ const MERCHANT_HOME = {
   Blinkit: 'https://www.blinkit.com', Zepto: 'https://www.zeptonow.com',
   MakeMyTrip: 'https://www.makemytrip.com', Cleartrip: 'https://www.cleartrip.com',
   IRCTC: 'https://www.irctc.co.in', BookMyShow: 'https://in.bookmyshow.com',
+  District: 'https://www.district.in',
 };
 
 // Affiliate "Buy via our link" ke liye shoppable landing URL.
@@ -122,6 +124,7 @@ const AMOUNT_SELECTORS = {
   Cleartrip: ['[class*="grandTotal"]', '[class*="totalAmount"]', '.total-amount'],
   IRCTC: ['#totalCollectibleAmount', '[class*="totalFare"]', '[class*="total"]'],
   BookMyShow: ['[class*="grandTotal"]', '[class*="totalAmount"]', '[class*="amountPayable"]'],
+  District: ['[class*="grandTotal"]', '[class*="totalAmount"]', '[class*="amountPayable"]', '[class*="payable"]'],
 };
 
 const TOTAL_LABELS = /(grand total|order total|amount payable|total payable|total amount|net payable|to pay|bill total|item total|amount to pay|payable amount|you pay|total payable amount|total fare|final amount)/i;
@@ -482,7 +485,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v21'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v22'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
