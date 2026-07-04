@@ -194,7 +194,7 @@ function findCardTitleNodes(D) {
     const t = (n.textContent || '').replace(/\s+/g, ' ').trim();
     if (t.length < 10 || t.length > 150) continue;
     // "ending in 3003" (Amazon) ya "• 3003" (Flipkart) ya "xx3003" — koi bhi last4 marker.
-    if (!/(?:ending\s+(?:in|with)\s*|[•·*]{1,4}\s*|\bx{2,4}\s*)\d{2,4}\b/i.test(t)) continue;
+    if (!/(?:ending\s+(?:in|with)\s*|[•·*]{1,4}\s*|\bx{2,4}\s*)\d{2,4}(?!\d)/i.test(t)) continue;
     if (!BANK_NAME_RE.test(t)) continue;
     titles.push({ node: n, text: t.toLowerCase() });
   }
@@ -219,23 +219,28 @@ function readPaymentCardOffers(doc) {
     const amt = parseFloat(m[1].replace(/,/g, ''));
     if (!amt || amt <= 0 || amt > 100000) continue;
 
-    // 1) Ancestor-walk (relaxed): chhota container mile to best signal.
-    let el = node, ctx = '';
-    for (let i = 0; i < 15 && el.parentElement; i++) {
-      el = el.parentElement;
-      const at = (el.textContent || '').replace(/\s+/g, ' ');
-      if (at.length > 1200) break; // container ab poori list jitna bada — aage mat jao
-      if (BANK_NAME_RE.test(at)) { ctx = at.toLowerCase().slice(0, 600); break; }
-    }
-    // 2) Fallback (Amazon ka naya checkout): DOM order me is offer se PEHLE wala
-    //    nazdeeki card-title — offer hamesha apne card ke title ke neeche hota hai.
-    if (!ctx && titles.length) {
+    // 1) TITLE-FIRST: DOM order me is offer se PEHLE wala nazdeeki card-title — tight
+    //    ctx (sirf us card ka naam+last4). Ancestor-walk ka bada container kabhi-kabhi
+    //    PADOSI card rows bhi nigal leta tha ("flipkart axis" ICICI ke ctx me aa gaya
+    //    tha → phantom match). Title hamesha apne card tak seemit hota hai.
+    let ctx = '';
+    if (titles.length) {
       let best = null;
       for (const t of titles) {
         // bit 4 = DOCUMENT_POSITION_FOLLOWING → offer node title ke baad aata hai
         if (t.node.compareDocumentPosition(node) & 4) best = t;
       }
       if (best) ctx = best.text;
+    }
+    // 2) Fallback: titles hi na mile to ancestor-walk (chhota bank-named container).
+    if (!ctx) {
+      let el = node;
+      for (let i = 0; i < 15 && el.parentElement; i++) {
+        el = el.parentElement;
+        const at = (el.textContent || '').replace(/\s+/g, ' ');
+        if (at.length > 1200) break; // container ab poori list jitna bada — aage mat jao
+        if (BANK_NAME_RE.test(at)) { ctx = at.toLowerCase().slice(0, 600); break; }
+      }
     }
     if (ctx) out.push({ amt, ctx }); else noCtx++;
   }
@@ -288,10 +293,12 @@ const OFFER_GENERIC_WORDS = new Set([
 //   Amazon: "ending in 3003" · Flipkart: "credit card • 3003" · aur: "xx3003", "**3003"
 function ctxLast4s(ctx) {
   const out = [];
+  // NOTE: \b nahi — "•3003no cost emi" jaise concatenated text me digit→letter pe \b fail
+  // ho jata hai. (?!\d) = bas agla char digit na ho.
   const patterns = [
-    /ending\s+(?:in|with)\s*(\d{2,4})\b/g,
-    /[•·*]{1,4}\s*(\d{2,4})\b/g,
-    /\bx{2,4}\s*(\d{2,4})\b/gi,
+    /ending\s+(?:in|with)\s*(\d{2,4})(?!\d)/g,
+    /[•·*]{1,4}\s*(\d{2,4})(?!\d)/g,
+    /\bx{2,4}\s*(\d{2,4})(?!\d)/gi,
   ];
   for (const re of patterns) {
     let m;
@@ -395,7 +402,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v4'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v5'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
