@@ -57,6 +57,37 @@ function inrdealsLink(url, username) {
   return `https://inrdeals.com/${username}/${url}`;
 }
 
+// Official credit-card application pages per bank — for the "Apply" button on cards
+// the user does not own yet. (Mirrors website lib/affiliate.ts BANK_APPLY.)
+const BANK_APPLY = {
+  'HDFC': 'https://www.hdfcbank.com/personal/pay/cards/credit-cards',
+  'Axis': 'https://www.axisbank.com/retail/cards/credit-card',
+  'SBI': 'https://www.sbicard.com/en/personal/credit-cards.page',
+  'ICICI': 'https://www.icicibank.com/personal-banking/cards/credit-card',
+  'Kotak': 'https://www.kotak.com/en/personal-banking/cards/credit-cards.html',
+  'RBL': 'https://www.rblbank.com/category/credit-cards',
+  'IndusInd': 'https://www.indusind.com/in/en/personal/cards/credit-card.html',
+  'AU Small Finance Bank': 'https://www.aubank.in/credit-cards',
+  'IDFC FIRST': 'https://www.idfcfirstbank.com/credit-card',
+  'Federal Bank': 'https://www.federalbank.co.in/credit-card',
+  'Yes Bank': 'https://www.yesbank.com/personal-banking/yes-individual/cards/credit-cards',
+  'HSBC': 'https://www.hsbc.co.in/credit-cards/',
+  'Standard Chartered': 'https://www.sc.com/in/credit-cards/',
+  'American Express': 'https://www.americanexpress.com/en-in/credit-cards/',
+  'DBS Bank': 'https://www.dbs.com/in/personal/cards/default.page',
+  'Bank of Baroda': 'https://www.bobcard.co.in/',
+};
+
+// Apply URL for a card's bank (optionally INRDeals-wrapped), or null if unknown.
+function bankApplyUrl(bank, cfg) {
+  const dest = BANK_APPLY[bank];
+  if (!dest) return null;
+  const c = cfg || DEFAULT_AFFILIATE_CONFIG;
+  return (c.inrdeals && c.inrdeals.enabled && c.inrdeals.username)
+    ? inrdealsLink(dest, c.inrdeals.username)
+    : dest;
+}
+
 /**
  * Affiliated URL banao.
  * @param {string} merchant - 'amazon' | 'flipkart' | 'myntra' | ...
@@ -85,6 +116,6 @@ function affiliateUrl(merchant, url, config) {
 
 // ---------- Exports (browser/worker/node) ----------
 // unique const naam — classic scripts shared global scope mein collide na ho.
-const affiliateApi = { DEFAULT_AFFILIATE_CONFIG, DISCLOSURE, affiliateUrl, amazonLink, flipkartLink, cuelinksLink, inrdealsLink };
+const affiliateApi = { DEFAULT_AFFILIATE_CONFIG, DISCLOSURE, affiliateUrl, amazonLink, flipkartLink, cuelinksLink, inrdealsLink, bankApplyUrl };
 if (typeof module !== 'undefined' && module.exports) module.exports = affiliateApi;
 if (typeof globalThis !== 'undefined') globalThis.CardWizAffiliate = affiliateApi;

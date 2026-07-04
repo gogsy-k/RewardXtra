@@ -92,6 +92,10 @@ const I18N = {
     cw_disclosure: 'We may earn a small commission — no extra cost to you.', cw_donate: '(50% will be donated)', cw_close: 'Close',
     cw_ft_approx: '≈ = estimated ₹ value of points/miles · "offer" = instant discount',
     cw_ft_readonly: '🔒 Read-only · data stays on this device',
+    cw_tab_your: 'Your cards', cw_tab_all: 'All cards', cw_apply: 'Apply ↗',
+    cw_unlock: '🔒 Unlock rewards with Premium →',
+    cw_all_empty: 'You already have the top cards! 🎉',
+    cw_owned_empty: 'No cards yet — add them in CardWiz.',
   },
   hinglish: {
     nav_best: '🏆 Top Cards', nav_mycards: '💼 Mere Cards', nav_suggest: '💡 Suggest', nav_more: '⭐ More',
@@ -168,6 +172,10 @@ const I18N = {
     cw_disclosure: 'Humein chhota commission mil sakta hai — aapko koi extra cost nahi.', cw_donate: '(50% donate kiya jayega)', cw_close: 'Band karo',
     cw_ft_approx: '≈ = points/miles ki estimated ₹ value · "offer" = instant discount',
     cw_ft_readonly: '🔒 Read-only · data sirf is device pe',
+    cw_tab_your: 'Aapke cards', cw_tab_all: 'Saare cards', cw_apply: 'Apply ↗',
+    cw_unlock: '🔒 Premium se rewards unlock karo →',
+    cw_all_empty: 'Aapke paas already top cards hain! 🎉',
+    cw_owned_empty: 'Abhi koi card nahi — CardWiz me add karo.',
   },
   hi: {
     nav_best: '🏆 टॉप कार्ड', nav_mycards: '💼 मेरे कार्ड', nav_suggest: '💡 सुझाव', nav_more: '⭐ और',
@@ -244,6 +252,10 @@ const I18N = {
     cw_disclosure: 'हमें छोटा commission मिल सकता है — आपको कोई extra cost नहीं।', cw_donate: '(50% donate किया जाएगा)', cw_close: 'बंद करो',
     cw_ft_approx: '≈ = points/miles की estimated ₹ value · "offer" = instant discount',
     cw_ft_readonly: '🔒 Read-only · data सिर्फ इस device पे',
+    cw_tab_your: 'आपके cards', cw_tab_all: 'सारे cards', cw_apply: 'Apply ↗',
+    cw_unlock: '🔒 Premium से rewards unlock करो →',
+    cw_all_empty: 'आपके पास already top cards हैं! 🎉',
+    cw_owned_empty: 'अभी कोई card नहीं — CardWiz में add करो।',
   },
 };
 

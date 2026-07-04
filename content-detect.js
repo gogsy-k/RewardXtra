@@ -205,10 +205,10 @@ function readOffersFromDOM() {
 // Wallet + cap usage ek saath padho (read-only).
 function getWalletState() {
   return new Promise((resolve) => {
-    if (typeof chrome === 'undefined' || !chrome.storage) return resolve({ owned: [], capUsage: null });
-    chrome.storage.local.get(['myCards', 'capUsage'], (r) => {
+    if (typeof chrome === 'undefined' || !chrome.storage) return resolve({ owned: [], capUsage: null, myCards: [], isPremium: false });
+    chrome.storage.local.get(['myCards', 'capUsage', 'isPremium'], (r) => {
       const mc = r.myCards || [];
-      resolve({ owned: [...new Set(mc.map((c) => c.cardId))], capUsage: r.capUsage || null, myCards: mc });
+      resolve({ owned: [...new Set(mc.map((c) => c.cardId))], capUsage: r.capUsage || null, myCards: mc, isPremium: !!r.isPremium });
     });
   });
 }
@@ -240,44 +240,49 @@ async function evaluateAndRender() {
   if (sessionStorage.getItem('scs-dismissed') === location.pathname) return;
 
   const DB = await window.CardWizCatalog.load();
-  const { owned, capUsage, myCards } = await getWalletState();
+  const { owned, capUsage, myCards, isPremium } = await getWalletState();
   const amount = detectAmount(site.merchant);
+  const hasAmt = amount && amount > 0;
 
-  const opts = { category: site.category, amount: amount || 0 };
-  if (owned.length) opts.ownedCardIds = owned;
-
+  const baseOpts = { category: site.category, amount: amount || 0 };
   // Phase 5: widget bhi caps respect kare (read-only — sirf warn karta hai, log nahi).
   if (window.CardWizCapTracker) {
-    opts.getRemaining = window.CardWizCapTracker.makeGetRemaining(capUsage, new Date());
+    baseOpts.getRemaining = window.CardWizCapTracker.makeGetRemaining(capUsage, new Date());
   }
 
-  const ranked = window.CardWizEngine.recommend(DB, opts);
-
-  // Page pe visible bank-offers padho aur ranking mein factor karo (reward + offer).
+  // ── "Your cards" — owned cards, page-offers factored in ──
   const offerTexts = readOffersFromDOM();
   const offersByBank = window.CardWizOffers.bestOffersByBank(offerTexts, amount || 0);
-  ranked.forEach((r) => {
-    const m = offersByBank[r.bank];
-    // Safety: offer kabhi order amount se zyada nahi ho sakta (mangled DOM se bachao).
-    r.offerValue = m ? Math.min(m.value, amount || m.value) : 0;
-    r.offerRaw = m ? m.offer.raw : null;
-    r.total = r.savings + r.offerValue;
-  });
-  // reward+offer combined ke hisaab se dobara rank karo.
-  ranked.sort((a, b) => (b.total - a.total) || (b.rate - a.rate));
+  let ownedRanked = [];
+  if (owned.length) {
+    ownedRanked = window.CardWizEngine.recommend(DB, { ...baseOpts, ownedCardIds: owned });
+    ownedRanked.forEach((r) => {
+      const m = offersByBank[r.bank];
+      r.offerValue = m ? Math.min(m.value, amount || m.value) : 0;
+      r.offerRaw = m ? m.offer.raw : null;
+      r.total = r.savings + r.offerValue;
+    });
+    ownedRanked.sort((a, b) => (b.total - a.total) || (b.rate - a.rate));
+  }
 
-  // Jo offers kisi card se match nahi hue (Kotak/OneCard etc.) — info ke liye.
-  const matchedBanks = new Set(ranked.map((r) => r.bank));
+  // ── "All cards" — full catalog minus owned, ranked by reward (upsell tab) ──
+  const ownedSet = new Set(owned);
+  const notOwned = window.CardWizEngine.recommend(DB, baseOpts)
+    .filter((r) => !ownedSet.has(r.id) && (r.savings > 0 || !hasAmt))
+    .slice(0, 25);
+
+  // Jo offers kisi owned card se match nahi hue — info ke liye.
+  const matchedBanks = new Set(ownedRanked.map((r) => r.bank));
   const otherOffers = Object.values(offersByBank)
     .filter((m) => !matchedBanks.has(m.offer.bank))
     .map((m) => m.offer.bank);
 
   // Same state pe baar-baar re-render mat karo.
-  const sig = `${site.category}|${amount}|${owned.length}|${ranked[0] && ranked[0].id}|${ranked[0] && ranked[0].total}|${offerTexts.length}`;
+  const sig = `${site.category}|${amount}|${owned.length}|${isPremium}|${ownedRanked[0] && ownedRanked[0].id}|${ownedRanked[0] && ownedRanked[0].total}|${notOwned[0] && notOwned[0].id}|${offerTexts.length}`;
   if (sig === lastSignature) return;
   lastSignature = sig;
 
-  renderWidget(site, amount, ranked, owned.length > 0, otherOffers, myCards);
+  renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned, isPremium);
 }
 
 // ---------- Shadow-DOM Widget ----------
@@ -287,7 +292,7 @@ function removeWidget() {
   if (host) host.remove();
 }
 
-function renderWidget(site, amount, ranked, usingWallet, otherOffers, myCards) {
+function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned, isPremium) {
   removeWidget();
 
   const host = document.createElement('div');
@@ -297,53 +302,60 @@ function renderWidget(site, amount, ranked, usingWallet, otherOffers, myCards) {
 
   const hasAmount = amount && amount > 0;
 
-  // Top 3 (savings/offer > 0 wale) list banao
-  // Saare relevant cards dikhao (reward/offer wale) — max 5 visible, baaki scrollable.
-  const shown = ranked.filter((r) => r.total > 0 || !hasAmount);
-
-  let listHtml = '';
-  shown.forEach((r, i) => {
+  // Ek card row — dono tabs (owned / all) isi se. blur = reward chhupa (premium gate);
+  // apply = not-owned card pe Apply button.
+  function buildRow(r, i, list, blur, apply) {
     const star = i === 0 ? '⭐ ' : '';
     const isCash = r.type === 'cashback';
     const typeLabel = isCash ? T('cw_type_cashback') : r.type === 'miles' ? T('cw_type_miles') : T('cw_type_points');
     const typeClass = isCash ? 'tag-cash' : r.type === 'miles' ? 'tag-miles' : 'tag-pts';
-    // Cashback = asli ₹; points/miles = estimated ₹ value (≈ se signal).
     const approx = isCash ? '' : '≈';
+    const bl = blur ? ' blurred' : '';
     let right;
     if (hasAmount) {
-      const rewardRow = `<span class="rewardrow"><span class="reward">${approx}₹${money(r.savings)}</span><span class="pill ${typeClass}">${typeLabel}</span></span>`;
-      const offerLine = r.offerValue > 0 ? `<span class="offer">+₹${money(r.offerValue)} ${T('cw_instant_off')}</span>` : '';
+      const rewardRow = `<span class="rewardrow"><span class="reward${bl}">${approx}₹${money(r.savings)}</span><span class="pill ${typeClass}">${typeLabel}</span></span>`;
+      const offerLine = (r.offerValue > 0) ? `<span class="offer">+₹${money(r.offerValue)} ${T('cw_instant_off')}</span>` : '';
       const capLine = r.capExhausted ? `<span class="capnote khatam">${T('pop_cap_khatam')}</span>`
                     : (r.capped ? `<span class="capnote">${T('cw_cap_tak')}</span>` : '');
-      const diff = (i === 0 && shown.length > 1) ? r.savings - shown[1].savings : 0;
+      const diff = (!blur && i === 0 && list.length > 1) ? r.savings - list[1].savings : 0;
       const whyLine = diff > 0 ? `<span class="whydiff">+₹${money(diff)} ${T('cw_vs_next')}</span>` : '';
       right = rewardRow + offerLine + capLine + whyLine;
     } else {
-      right = `<span class="rewardrow"><span class="reward">${money(r.rate)}%</span><span class="pill ${typeClass}">${typeLabel}</span></span>`;
+      right = `<span class="rewardrow"><span class="reward${bl}">${money(r.rate)}%</span><span class="pill ${typeClass}">${typeLabel}</span></span>`;
     }
-    const walletEntry = myCards && myCards.find((c) => c.cardId === r.id);
     let subtitle = '';
+    const walletEntry = myCards && myCards.find((c) => c.cardId === r.id);
     if (walletEntry) {
       const endingPart = walletEntry.last4 ? T('cw_ending', { n: walletEntry.last4 }) : '';
       if (walletEntry.nickname && endingPart) subtitle = `${walletEntry.nickname} - ${endingPart}`;
       else if (walletEntry.nickname) subtitle = walletEntry.nickname;
       else subtitle = endingPart;
     }
-    listHtml += `
-      <div class="row ${i === 0 ? 'best' : ''} ${r.capExhausted ? 'exhausted' : ''}">
-        <div class="cleft">
-          <span class="cname">${star}${escapeHtml(r.name)}</span>
-          ${subtitle ? `<span class="csub">${escapeHtml(subtitle)}</span>` : ''}
-        </div>
-        <span class="csave">${right}</span>
+    let applyHtml = '';
+    if (apply && window.CardWizAffiliate) {
+      const url = window.CardWizAffiliate.bankApplyUrl(r.bank);
+      if (url) applyHtml = `<a class="apply" data-url="${escapeHtml(url)}">${T('cw_apply')}</a>`;
+    }
+    return `<div class="row ${i === 0 ? 'best' : ''} ${r.capExhausted ? 'exhausted' : ''}">
+        <div class="cleft"><span class="cname">${star}${escapeHtml(r.name)}</span>${subtitle ? `<span class="csub">${escapeHtml(subtitle)}</span>` : ''}</div>
+        <span class="csave">${right}${applyHtml}</span>
       </div>`;
-  });
+  }
+
+  const shownOwned = ownedRanked.filter((r) => r.total > 0 || !hasAmount);
+  const ownedHtml = shownOwned.length
+    ? shownOwned.map((r, i) => buildRow(r, i, shownOwned, false, false)).join('')
+    : `<div class="cwempty">${T('cw_owned_empty')}</div>`;
+  const allHtml = notOwned.length
+    ? notOwned.map((r, i) => buildRow(r, i, notOwned, !isPremium, true)).join('')
+    : `<div class="cwempty">${T('cw_all_empty')}</div>`;
 
   const headline = hasAmount
     ? T('cw_headline_amount', { amt: amount, merchant: site.merchant })
     : T('cw_headline_noamount', { merchant: site.merchant });
 
-  const sourceNote = usingWallet ? T('cw_source_wallet') : T('cw_source_all');
+  const upgradeHtml = (!isPremium && notOwned.length)
+    ? `<button class="upgrade">${T('cw_unlock')}</button>` : '';
 
   // Jo offers kisi DB-card se match nahi (Kotak etc.) — chhoti info line.
   const otherOffersHtml = (otherOffers && otherOffers.length)
@@ -409,6 +421,14 @@ function renderWidget(site, amount, ranked, usingWallet, otherOffers, myCards) {
       .ft { font-size:9px; color:#8A93AC; margin-top:6px; line-height:1.4; }
       .ft b { color:#B7C0D4; }
       .csave .reward, .csave .offer, .whydiff, .pill { font-variant-numeric: tabular-nums; }
+      .tabs { display:flex; gap:4px; margin-bottom:8px; background:#161C2D; border:1px solid #2A3450; border-radius:9px; padding:3px; }
+      .tab { flex:1; background:none; border:none; color:#8A93AC; font-size:10px; font-weight:700; padding:6px 4px; border-radius:6px; cursor:pointer; font-family:inherit; }
+      .tab.active { background:#6366F1; color:#fff; }
+      .reward.blurred { filter:blur(5px); -webkit-filter:blur(5px); user-select:none; }
+      .apply { display:inline-block; margin-top:5px; background:#6366F1; color:#fff; font-size:9px; font-weight:700; padding:3px 9px; border-radius:5px; cursor:pointer; text-decoration:none; }
+      .apply:hover { background:#818CF8; }
+      .upgrade { width:100%; margin-bottom:8px; background:linear-gradient(90deg,#6366F1,#818CF8); color:#fff; border:none; border-radius:8px; padding:8px; font-size:10px; font-weight:800; cursor:pointer; font-family:inherit; }
+      .cwempty { font-size:10px; color:#8A93AC; text-align:center; padding:18px 8px; }
       @media (prefers-reduced-motion: reduce) { .box { animation: none !important; } }
     </style>
     <div class="box">
@@ -417,10 +437,15 @@ function renderWidget(site, amount, ranked, usingWallet, otherOffers, myCards) {
         <button class="x" title="${T('cw_close')}">✕</button>
       </div>
       <div class="headline">${escapeHtml(headline)}</div>
-      <div class="cwlist">${listHtml}</div>
+      <div class="tabs">
+        <button class="tab active" data-tab="owned">${T('cw_tab_your')} (${shownOwned.length})</button>
+        <button class="tab" data-tab="all">${T('cw_tab_all')}</button>
+      </div>
+      <div class="cwlist" data-list="owned">${ownedHtml}</div>
+      <div class="cwlist" data-list="all" hidden>${upgradeHtml}${allHtml}</div>
       ${otherOffersHtml}
       ${affHtml}
-      <div class="ft"><b>${escapeHtml(sourceNote)}</b><br>${T('cw_ft_approx')}<br>${T('cw_ft_readonly')}</div>
+      <div class="ft">${T('cw_ft_approx')}<br>${T('cw_ft_readonly')}</div>
     </div>
   `;
 
@@ -430,6 +455,22 @@ function renderWidget(site, amount, ranked, usingWallet, otherOffers, myCards) {
   });
   const buyBtn = shadow.querySelector('.buy');
   if (buyBtn) buyBtn.addEventListener('click', () => window.open(buyBtn.dataset.url, '_blank', 'noopener'));
+
+  // Tab switch: Your cards <-> All cards
+  const tabs = shadow.querySelectorAll('.tab');
+  const lists = shadow.querySelectorAll('.cwlist');
+  tabs.forEach((tab) => tab.addEventListener('click', () => {
+    tabs.forEach((x) => x.classList.toggle('active', x === tab));
+    lists.forEach((l) => { l.hidden = (l.dataset.list !== tab.dataset.tab); });
+  }));
+
+  // Apply buttons (not-owned cards) → bank apply page
+  shadow.querySelectorAll('.apply').forEach((a) =>
+    a.addEventListener('click', (e) => { e.preventDefault(); window.open(a.dataset.url, '_blank', 'noopener'); }));
+
+  // Upgrade → pricing
+  const up = shadow.querySelector('.upgrade');
+  if (up) up.addEventListener('click', () => window.open('https://cardwiz.in/pricing', '_blank', 'noopener'));
 
   document.body.appendChild(host);
 }
