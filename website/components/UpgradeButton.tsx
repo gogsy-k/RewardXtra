@@ -83,9 +83,16 @@ export default function UpgradeButton({
 
   // --- render states ---
   if (owns) {
+    // Exact plan → "You're on Premium/Pro"; Premium card while on Pro → "Included in Pro".
+    const label =
+      user!.plan === tier
+        ? tier === "pro"
+          ? t("pay_on_pro")
+          : t("pay_already")
+        : t("pay_included_pro");
     return (
       <div className={`${base} border border-green/40 bg-green/10 text-green ${className}`}>
-        ✓ {t("pay_already")}
+        ✓ {label}
       </div>
     );
   }
