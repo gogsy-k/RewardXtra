@@ -393,6 +393,7 @@ function getWalletState() {
 
 let lastSignature = null; // dohraav rokne ke liye (SPA re-eval)
 let frameOffers = [];     // payment-iframe (apx) se postMessage se aaye card-offers
+let cwMinimized = false;  // ✕ se chip me minimize (NON-persistent: reload/nav pe full widget wapas)
 
 // i18n helper — CardWizI18n.t() + {var} interpolation. Falls back to key if i18n missing.
 function T(key, vars) {
@@ -411,7 +412,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v8'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v9'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -435,7 +436,7 @@ async function evaluateAndRender() {
   }
   // Purana per-path dismiss system hata diya (widget wapas laane ka UI hi nahi tha —
   // "extension aa hi nahi raha" confusion). Ab ✕ = minimize-to-chip (neeche dekho).
-  try { sessionStorage.removeItem('scs-dismissed'); } catch (_) { /* noop */ }
+  try { sessionStorage.removeItem('scs-dismissed'); sessionStorage.removeItem('cw-min'); } catch (_) { /* noop */ }
   lastSkipMsg = '';
 
   const DB = await window.CardWizCatalog.load();
@@ -582,7 +583,7 @@ function renderMinChip() {
     </style>
     <button class="chip" title="CardWiz kholo">💳</button>`;
   shadow.querySelector('.chip').addEventListener('click', () => {
-    try { sessionStorage.removeItem('cw-min'); } catch (_) { /* noop */ }
+    cwMinimized = false;
     lastSignature = null;
     evaluateAndRender().catch(() => {});
   });
@@ -590,7 +591,7 @@ function renderMinChip() {
 }
 
 function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned, isPremium) {
-  if (sessionStorage.getItem('cw-min') === '1') { renderMinChip(); return; }
+  if (cwMinimized) { renderMinChip(); return; }
   removeWidget();
 
   const host = document.createElement('div');
@@ -751,7 +752,7 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
   `;
 
   shadow.querySelector('.x').addEventListener('click', () => {
-    try { sessionStorage.setItem('cw-min', '1'); } catch (_) { /* noop */ }
+    cwMinimized = true;
     renderMinChip(); // gayab nahi — chip me minimize
   });
 
@@ -889,6 +890,7 @@ function init() {
     if (now !== lastPath) {
       lastPath = now;
       lastSignature = null;
+      cwMinimized = false; // nayi page/section pe full widget wapas (chip stuck na rahe)
       tries = 0;
       setTimeout(retry, 600);
     }
