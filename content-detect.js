@@ -541,11 +541,12 @@ function init() {
     start();
   }
 
-  // Popup mein language change ho to widget bhi turant us language mein re-render ho.
+  // Popup mein language / wallet / premium change ho to widget bhi turant re-render ho.
   if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
     chrome.storage.onChanged.addListener((changes, area) => {
-      if (area === 'local' && changes.cwLang && window.CardWizI18n) {
-        window.CardWizI18n.setLangValue(changes.cwLang.newValue || 'en');
+      if (area !== 'local') return;
+      if (changes.cwLang && window.CardWizI18n) window.CardWizI18n.setLangValue(changes.cwLang.newValue || 'en');
+      if (changes.cwLang || changes.myCards || changes.isPremium) {
         lastSignature = null; // force re-render
         evaluateAndRender().catch(() => {});
       }
