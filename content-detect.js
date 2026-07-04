@@ -276,6 +276,13 @@ function money(n) {
   return Number.isInteger(r) ? String(r) : r.toFixed(2);
 }
 
+// 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
+// "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
+const CW_DEBUG = true;
+function dbg(...args) {
+  if (CW_DEBUG) { try { console.log('[CardWiz]', ...args); } catch (_) { /* noop */ } }
+}
+
 async function evaluateAndRender() {
   const site = detectSite(location.hostname);
   if (!site) return;
@@ -301,6 +308,8 @@ async function evaluateAndRender() {
   const offerTexts = readOffersFromDOM();
   const offersByBank = window.CardWizOffers.bestOffersByBank(offerTexts, amount || 0);
   const cardOffers = readPaymentCardOffers(); // har card ka apna instant offer (bank-level nahi)
+  dbg('site:', site.merchant, '| amount:', amount, '| owned:', owned.length, '| premium:', isPremium);
+  dbg('page card-offers:', cardOffers.map((o) => `₹${o.amt} @ "${o.ctx.slice(0, 70)}…"`));
   let ownedRanked = [];
   if (owned.length) {
     ownedRanked = window.CardWizEngine.recommend(DB, { ...baseOpts, ownedCardIds: owned });
@@ -308,8 +317,10 @@ async function evaluateAndRender() {
       const off = matchCardOffer(r.name, cardOffers); // sirf isi card ka offer
       r.offerValue = off > 0 ? Math.min(off, amount || off) : 0;
       r.total = r.savings + r.offerValue;
+      if (r.offerValue > 0) dbg('offer matched:', r.name, '→ +₹' + r.offerValue);
     });
     ownedRanked.sort((a, b) => (b.total - a.total) || (b.rate - a.rate));
+    if (!ownedRanked.some((r) => r.offerValue > 0)) dbg('koi owned card kisi page-offer se match nahi hua');
   }
 
   // ── "All cards" — full catalog minus owned, ranked by reward (upsell tab) ──
@@ -358,17 +369,20 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
     const typeClass = isCash ? 'tag-cash' : r.type === 'miles' ? 'tag-miles' : 'tag-pts';
     const approx = isCash ? '' : '≈';
     const bl = blur ? ' blurred' : '';
+    // Instant-off flat hota hai — order total pe depend nahi karta, isliye DONO modes
+    // (amount / no-amount) me dikhao. (Pehle sirf amount-mode me tha — totals late load
+    // hone par offer kabhi dikhta hi nahi tha.)
+    const offerLine = (r.offerValue || 0) > 0 ? `<span class="offer">+₹${money(r.offerValue)} ${T('cw_instant_off')}</span>` : '';
     let right;
     if (hasAmount) {
       const rewardRow = `<span class="rewardrow"><span class="reward${bl}">${approx}₹${money(r.savings)}</span><span class="pill ${typeClass}">${typeLabel}</span></span>`;
-      const offerLine = (r.offerValue > 0) ? `<span class="offer">+₹${money(r.offerValue)} ${T('cw_instant_off')}</span>` : '';
       const capLine = r.capExhausted ? `<span class="capnote khatam">${T('pop_cap_khatam')}</span>`
                     : (r.capped ? `<span class="capnote">${T('cw_cap_tak')}</span>` : '');
       const diff = (!blur && i === 0 && list.length > 1) ? r.savings - list[1].savings : 0;
       const whyLine = diff > 0 ? `<span class="whydiff">+₹${money(diff)} ${T('cw_vs_next')}</span>` : '';
       right = rewardRow + offerLine + capLine + whyLine;
     } else {
-      right = `<span class="rewardrow"><span class="reward${bl}">${money(r.rate)}%</span><span class="pill ${typeClass}">${typeLabel}</span></span>`;
+      right = `<span class="rewardrow"><span class="reward${bl}">${money(r.rate)}%</span><span class="pill ${typeClass}">${typeLabel}</span></span>` + offerLine;
     }
     let subtitle = '';
     const walletEntry = myCards && myCards.find((c) => c.cardId === r.id);
