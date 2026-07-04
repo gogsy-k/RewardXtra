@@ -182,9 +182,26 @@ function readPaymentPageOffers() {
 // "Amazon Pay ICICI ... ₹3500 off with this card" vs "ICICI ... ₹7500 off".
 const OFFER_PHRASE_RE = /(?:₹|rs\.?|inr)?\s*([\d,]+(?:\.\d{1,2})?)\s*off\s+(?:with\s+this\s+card|on\s+full\s+payment)/i;
 
+// Card-title nodes: "Amazon Pay ICICI Bank Credit Card ending in 3012" jaise chhote
+// header elements (bank naam + "ending in NNNN"). Offer inhi se attribute hota hai.
+function findCardTitleNodes(D) {
+  const titles = [];
+  const nodes = D.querySelectorAll('div, span, p, td, b, strong, label, h1, h2, h3, h4');
+  for (const n of nodes) {
+    if (n.children.length > 5) continue;
+    const t = (n.textContent || '').replace(/\s+/g, ' ').trim();
+    if (t.length < 10 || t.length > 150) continue;
+    if (!/ending in\s*\d{2,4}/i.test(t)) continue;
+    if (!BANK_NAME_RE.test(t)) continue;
+    titles.push({ node: n, text: t.toLowerCase() });
+  }
+  return titles;
+}
+
 function readPaymentCardOffers(doc) {
   const D = doc || document;
   const out = [];
+  const titles = findCardTitleNodes(D);
   let phraseSeen = 0, noCtx = 0;
   const leaves = D.querySelectorAll('div, li, p, span, td, b, strong');
   for (const node of leaves) {
@@ -194,22 +211,41 @@ function readPaymentCardOffers(doc) {
     // ₹ OPTIONAL (Amazon symbol ko alag element me rakhta hai). Strong phrase required.
     const m = own.match(OFFER_PHRASE_RE);
     if (!m) continue;
+    if (/emi transaction only/i.test(own)) continue; // EMI-only offer ≠ flat instant off
     phraseSeen++;
     const amt = parseFloat(m[1].replace(/,/g, ''));
     if (!amt || amt <= 0 || amt > 100000) continue;
-    // Card-row container dhoondo (jisme card ka naam ho).
+
+    // 1) Ancestor-walk (relaxed): chhota container mile to best signal.
     let el = node, ctx = '';
-    for (let i = 0; i < 10 && el.parentElement; i++) {
+    for (let i = 0; i < 15 && el.parentElement; i++) {
       el = el.parentElement;
       const at = (el.textContent || '').replace(/\s+/g, ' ');
-      if (BANK_NAME_RE.test(at) && at.length < 600) { ctx = at.toLowerCase(); break; }
+      if (at.length > 1200) break; // container ab poori list jitna bada — aage mat jao
+      if (BANK_NAME_RE.test(at)) { ctx = at.toLowerCase().slice(0, 600); break; }
     }
-    if (ctx) out.push({ amt, ctx });
-    else { noCtx++; dbg('offer text mila par card-row (bank) context NAHI:', own.slice(0, 90)); }
+    // 2) Fallback (Amazon ka naya checkout): DOM order me is offer se PEHLE wala
+    //    nazdeeki card-title — offer hamesha apne card ke title ke neeche hota hai.
+    if (!ctx && titles.length) {
+      let best = null;
+      for (const t of titles) {
+        // bit 4 = DOCUMENT_POSITION_FOLLOWING → offer node title ke baad aata hai
+        if (t.node.compareDocumentPosition(node) & 4) best = t;
+      }
+      if (best) ctx = best.text;
+    }
+    if (ctx) out.push({ amt, ctx }); else noCtx++;
   }
-  // Sirf tab log jab kuch mila/miss hua — pure silence se bhi pata chalta hai (0 leaves matched).
-  if (phraseSeen || out.length) dbg(`scan: ${leaves.length} nodes | phrase-match: ${phraseSeen} | ctx-ok: ${out.length} | ctx-miss: ${noCtx}`);
-  return out;
+  // Dedupe (same amt + same ctx ke duplicate variants: "Up to…", "Deselect…" etc.)
+  const seen = new Set();
+  const dedup = out.filter((o) => {
+    const k = o.amt + '|' + o.ctx;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  }).slice(0, 30);
+  if (phraseSeen || dedup.length) dbg(`scan: titles:${titles.length} | phrase:${phraseSeen} | attributed:${dedup.length} | miss:${noCtx}`);
+  return dedup;
 }
 
 // Top frame se: page ke saare SAME-ORIGIN-accessible iframes ka DOM seedha scan karo
