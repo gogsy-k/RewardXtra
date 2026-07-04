@@ -281,13 +281,23 @@ const OFFER_GENERIC_WORDS = new Set([
 //      (generic rows jaise "ICICI Bank Credit Card ending in 3003" isi se attribute hote hain).
 //   2) naam ke distinctive tokens (e.g. "amazon pay").
 // No confident match -> 0 (kabhi over-credit nahi).
-function matchCardOffer(cardName, last4List, cardOffers) {
+// ctx me se "ending in/with NNNN" ke saare digits nikaalo.
+function ctxLast4s(ctx) {
+  const out = [];
+  const re = /ending\s+(?:in|with)\s*(\d{2,4})/g;
+  let m;
+  while ((m = re.exec(ctx))) out.push(m[1]);
+  return out;
+}
+
+function matchCardOffer(cardName, last4List, cardOffers, claimed) {
   if (!cardOffers || !cardOffers.length) return 0;
   for (const l4 of (last4List || [])) {
     if (!l4) continue;
-    const hits = cardOffers.filter((o) => o.ctx.includes('ending in ' + l4));
+    const hits = cardOffers.filter((o) => ctxLast4s(o.ctx).includes(l4));
     if (hits.length) {
-      dbg('offer matched via last4', l4, ':', cardName);
+      if (claimed) hits.forEach((h) => claimed.add(h));
+      dbg('offer matched via last4', l4, ':', cardName, '→ ₹' + Math.min(...hits.map((o) => o.amt)));
       return Math.min(...hits.map((o) => o.amt));
     }
   }
@@ -295,6 +305,7 @@ function matchCardOffer(cardName, last4List, cardOffers) {
     .filter((t) => t.length > 2 && !OFFER_GENERIC_WORDS.has(t));
   if (!tokens.length) return 0; // koi distinctive token nahi -> safe: no offer (over-credit se bacho)
   const matches = cardOffers.filter((o) => tokens.every((t) => o.ctx.includes(t)));
+  if (matches.length && claimed) matches.forEach((m2) => claimed.add(m2));
   return matches.length ? Math.min(...matches.map((o) => o.amt)) : 0;
 }
 
@@ -354,6 +365,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
+const CW_BUILD = 'l4-v2'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (CW_DEBUG) { try { console.log('[CardWiz]', ...args); } catch (_) { /* noop */ } }
 }
@@ -390,6 +402,13 @@ async function evaluateAndRender() {
   dbg('page card-offers:', cardOffers.map((o) => `₹${o.amt} @ "${o.ctx.slice(0, 70)}…"`));
   let ownedRanked = [];
   if (owned.length) {
+    // Wallet me kis-kis card ka last4 saved hai — matching ka raw material.
+    const walletL4 = (myCards || [])
+      .filter((c) => String(c.last4 || '').replace(/\D/g, '').length === 4)
+      .map((c) => `${c.cardId}:${String(c.last4).replace(/\D/g, '')}`);
+    dbg('wallet last4 entries (' + walletL4.length + '):', walletL4.slice(0, 15).join(', ') || 'KOI NAHI — isliye generic rows match nahi ho sakte');
+
+    const claimed = new Set();
     ownedRanked = window.CardWizEngine.recommend(DB, { ...baseOpts, ownedCardIds: owned });
     ownedRanked.forEach((r) => {
       // Is card ke wallet entries ke saved last4 (ek card ke multiple entries ho sakte).
@@ -397,13 +416,18 @@ async function evaluateAndRender() {
         .filter((c) => c.cardId === r.id)
         .map((c) => String(c.last4 || '').replace(/\D/g, ''))
         .filter((s) => s.length === 4);
-      const off = matchCardOffer(r.name, l4s, cardOffers); // sirf isi card ka offer
+      const off = matchCardOffer(r.name, l4s, cardOffers, claimed); // sirf isi card ka offer
       r.offerValue = off > 0 ? Math.min(off, amount || off) : 0;
       r.total = r.savings + r.offerValue;
-      if (r.offerValue > 0) dbg('offer matched:', r.name, '→ +₹' + r.offerValue);
     });
     ownedRanked.sort((a, b) => (b.total - a.total) || (b.rate - a.rate));
-    if (!ownedRanked.some((r) => r.offerValue > 0)) dbg('koi owned card kisi page-offer se match nahi hua');
+    // Jo page-offers kisi wallet card se attach NAHI hue — exact reason ke saath.
+    cardOffers.forEach((o) => {
+      if (!claimed.has(o)) {
+        const digits = ctxLast4s(o.ctx).join('/') || '?';
+        dbg(`⚠️ UNCLAIMED offer ₹${o.amt} (ending ${digits}) — wallet me is last4 wala card nahi/last4 missing. ctx: "${o.ctx.slice(0, 70)}"`);
+      }
+    });
   }
 
   // ── "All cards" — full catalog minus owned, ranked by reward (upsell tab) ──
@@ -629,7 +653,7 @@ function escapeHtml(s) {
 function init() {
   // Har frame me load-proof — isse pata chalta hai script payment iframe me inject
   // hua ya nahi (sabse pehla debugging clue).
-  dbg('loaded in', window.top === window ? 'TOP frame' : 'CHILD frame', '|', String(location.href).slice(0, 110));
+  dbg('build', CW_BUILD, '| loaded in', window.top === window ? 'TOP frame' : 'CHILD frame', '|', String(location.href).slice(0, 110));
 
   // ── FRAME MODE ── Amazon ka naya checkout payment-cards ko secure iframe (apx) me
   // rakhta hai. Frames me widget NAHI banate — sirf card-offers scan karke top frame
