@@ -457,7 +457,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v17'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v18'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -744,6 +744,39 @@ function clampWidgetIntoView() {
   applyWidgetPos(host, parseFloat(host.style.left) || 0, parseFloat(host.style.top) || 0);
 }
 
+// Order-summary / payable + proceed-button ka zone (jise widget dhakna nahi chahiye).
+// Ye zone dekh ke widget opposite side khulta hai (amount ke upar na aaye).
+function findSummaryRect() {
+  let rect = null;
+  const merge = (r) => {
+    if (!r || !r.width || !r.height || r.bottom <= 0 || r.top >= window.innerHeight) return; // off-screen skip
+    if (!rect) rect = { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+    else { rect.left = Math.min(rect.left, r.left); rect.top = Math.min(rect.top, r.top); rect.right = Math.max(rect.right, r.right); rect.bottom = Math.max(rect.bottom, r.bottom); }
+  };
+  const PROCEED_RE = /^(proceed(?:\s+to\s+(?:pay|buy|checkout))?|place order|continue to pay|pay now|make payment|pay securely|pay ₹)/i;
+  const nodes = document.querySelectorAll('span, div, td, p, strong, b, li, dt, dd, tr, button, a');
+  for (const n of nodes) {
+    const t = (n.textContent || '').replace(/\s+/g, ' ').trim();
+    if (!t || t.length > 60) continue;
+    if (PAYABLE_LABELS.test(t) || PROCEED_RE.test(t)) merge(n.getBoundingClientRect());
+  }
+  return rect;
+}
+
+// Widget ko aisi jagah kholo jahan order-summary/amount ko na dhake. Summary jis taraf hai
+// (left/right), widget uske ULTI taraf (bottom pe). Kuch na mile to default bottom-right.
+function autoPositionHost(host) {
+  const zone = findSummaryRect();
+  if (!zone) return; // summary nahi mila → default (bottom-right) theek
+  const rect = host.getBoundingClientRect();
+  const w = rect.width || 320, h = rect.height || 420, m = 20;
+  const summaryOnRight = (zone.left + zone.right) / 2 > window.innerWidth / 2;
+  const x = summaryOnRight ? m : (window.innerWidth - w - m); // ulti taraf
+  const y = window.innerHeight - h - m;                       // bottom pe
+  applyWidgetPos(host, x, y);
+  dbg('auto-position: summary', summaryOnRight ? 'RIGHT' : 'LEFT', '→ widget', summaryOnRight ? 'LEFT' : 'RIGHT');
+}
+
 function installDragListeners() {
   if (cwDragInstalled) return;
   cwDragInstalled = true;
@@ -993,9 +1026,12 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
   if (up) up.addEventListener('click', () => window.open('https://cardwiz.in/pricing', '_blank', 'noopener'));
 
   document.body.appendChild(host);
-  // Ab host DOM me hai → asli width/height available. Saved position ko sahi dims ke saath
-  // dobara clamp karo (warna off-screen saved pos andar nahi aata tha).
-  if (savedPos && typeof savedPos.x === 'number') applyWidgetPos(host, savedPos.x, savedPos.y);
+  // Ab host DOM me hai → asli width/height available.
+  if (savedPos && typeof savedPos.x === 'number') {
+    applyWidgetPos(host, savedPos.x, savedPos.y);   // user ne khud drag kiya → respect
+  } else {
+    autoPositionHost(host);                          // amount/summary ke upar na aaye → opposite side
+  }
 }
 
 function escapeHtml(s) {
