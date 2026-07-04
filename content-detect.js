@@ -298,10 +298,11 @@ function renderWidget(site, amount, ranked, usingWallet, otherOffers, myCards) {
   const hasAmount = amount && amount > 0;
 
   // Top 3 (savings/offer > 0 wale) list banao
-  const top3 = ranked.filter((r) => r.total > 0 || !hasAmount).slice(0, 3);
+  // Saare relevant cards dikhao (reward/offer wale) — max 5 visible, baaki scrollable.
+  const shown = ranked.filter((r) => r.total > 0 || !hasAmount);
 
   let listHtml = '';
-  top3.forEach((r, i) => {
+  shown.forEach((r, i) => {
     const star = i === 0 ? '⭐ ' : '';
     const isCash = r.type === 'cashback';
     const typeLabel = isCash ? T('cw_type_cashback') : r.type === 'miles' ? T('cw_type_miles') : T('cw_type_points');
@@ -314,7 +315,7 @@ function renderWidget(site, amount, ranked, usingWallet, otherOffers, myCards) {
       const offerLine = r.offerValue > 0 ? `<span class="offer">+₹${money(r.offerValue)} ${T('cw_instant_off')}</span>` : '';
       const capLine = r.capExhausted ? `<span class="capnote khatam">${T('pop_cap_khatam')}</span>`
                     : (r.capped ? `<span class="capnote">${T('cw_cap_tak')}</span>` : '');
-      const diff = (i === 0 && top3.length > 1) ? r.savings - top3[1].savings : 0;
+      const diff = (i === 0 && shown.length > 1) ? r.savings - shown[1].savings : 0;
       const whyLine = diff > 0 ? `<span class="whydiff">+₹${money(diff)} ${T('cw_vs_next')}</span>` : '';
       right = rewardRow + offerLine + capLine + whyLine;
     } else {
@@ -374,6 +375,10 @@ function renderWidget(site, amount, ranked, usingWallet, otherOffers, myCards) {
       .x { cursor:pointer; color:#8A93AC; font-size:14px; line-height:1; background:none; border:none; padding:2px 4px; }
       .x:hover { color:#FB7185; }
       .headline { font-size:11px; color:#B7C0D4; margin-bottom:8px; }
+      .cwlist { max-height:264px; overflow-y:auto; margin:0 -2px; padding:0 2px; }
+      .cwlist::-webkit-scrollbar { width:6px; }
+      .cwlist::-webkit-scrollbar-thumb { background:#2A3450; border-radius:3px; }
+      .cwlist::-webkit-scrollbar-track { background:transparent; }
       .row { display:flex; justify-content:space-between; align-items:center;
              background:#222C42; border:1px solid #2A3450; border-radius:8px;
              padding:8px 10px; margin-bottom:6px; gap:8px; }
@@ -412,7 +417,7 @@ function renderWidget(site, amount, ranked, usingWallet, otherOffers, myCards) {
         <button class="x" title="${T('cw_close')}">✕</button>
       </div>
       <div class="headline">${escapeHtml(headline)}</div>
-      ${listHtml}
+      <div class="cwlist">${listHtml}</div>
       ${otherOffersHtml}
       ${affHtml}
       <div class="ft"><b>${escapeHtml(sourceNote)}</b><br>${T('cw_ft_approx')}<br>${T('cw_ft_readonly')}</div>
