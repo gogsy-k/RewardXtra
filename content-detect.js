@@ -395,7 +395,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v3'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v4'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -434,6 +434,9 @@ async function evaluateAndRender() {
   const cardOffers = readAllFramesCardOffers().concat(frameOffers);
   dbg('site:', site.merchant, '| amount:', amount, '| owned:', owned.length, '| premium:', isPremium);
   dbg('page card-offers:', cardOffers.map((o) => `₹${o.amt} @ "${o.ctx.slice(0, 70)}…"`));
+  // Bank-wide parsed offers (fallback ka raw material) — kahan se kya parse hua, sab dikhe.
+  const bwList = Object.entries(offersByBank).map(([b, m2]) => `${b}: ₹${m2.value} raw:"${String((m2.offer && m2.offer.raw) || '').slice(0, 55)}"`);
+  if (bwList.length) dbg('bank-wide parsed:', bwList);
   let ownedRanked = [];
   if (owned.length) {
     // Wallet me kis-kis card ka last4 saved hai — matching ka raw material.
@@ -451,11 +454,10 @@ async function evaluateAndRender() {
         .map((c) => String(c.last4 || '').replace(/\D/g, ''))
         .filter((s) => s.length === 4);
       let off = matchCardOffer(r.name, r.bank, l4s, cardOffers, claimed); // sirf isi card ka offer (bank verified)
-      // Fallback (Flipkart/cart-style pages): agar page pe is bank ki CARD-SPECIFIC rows
-      // nahi hain, to bank-wide offer ("5% off on Axis Bank Cards") us bank ke har card
-      // pe genuinely lagta hai — wahi lagao. (Amazon jaise per-card pages pe fallback OFF,
-      // warna wahi purana over-credit bug.)
-      if (!off && !cardOffers.some((o) => bankMatchesCtx(r.bank, o.ctx))) {
+      // Fallback SIRF cart-style pages ke liye (jahan card-specific rows hoti hi nahi).
+      // Payment page (cardOffers.length > 0) pe page-wide sale banners ("Save upto ₹5500")
+      // kisi card pe nahi lagne chahiye — har card ka apna row-offer hi sach hai.
+      if (!off && cardOffers.length === 0) {
         const m = offersByBank[r.bank];
         if (m && m.value > 0) {
           off = m.value;
@@ -466,6 +468,8 @@ async function evaluateAndRender() {
       r.total = r.savings + r.offerValue;
     });
     ownedRanked.sort((a, b) => (b.total - a.total) || (b.rate - a.rate));
+    // Har render ka top-5 (reward + offer breakdown) — ranking flicker pakadne ke liye.
+    dbg('top5:', ownedRanked.slice(0, 5).map((r) => `${r.name} = ₹${money(r.savings)} + off₹${money(r.offerValue)}`));
     // Jo page-offers kisi wallet card se attach NAHI hue — exact reason ke saath.
     cardOffers.forEach((o) => {
       if (!claimed.has(o)) {
