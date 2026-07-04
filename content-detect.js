@@ -45,9 +45,12 @@ function detectSite(hostname) {
 }
 
 // Sirf cart/checkout/payment jaise pages pe widget dikhao — har page pe nahi.
-function isCheckoutish(pathAndSearch) {
+function isCheckoutish(pathAndSearch, host) {
   const u = (pathAndSearch || '').toLowerCase();
-  return /(cart|checkout|\/buy|payment|\/gp\/buy|order-summary|bag|booking|\/review|order-payment|buytickets)/.test(u);
+  if (/(cart|checkout|\/buy|payment|\/gp\/buy|order-summary|bag|booking|\/review|order-payment|buytickets)/.test(u)) return true;
+  // Ajio ka payment alag subdomain (payment.services.ajio.com/pay) pe hota hai — "/pay" bhi checkout.
+  if (/\.ajio\.com$/i.test(host || '') && /^\/pay(?:\/|\?|$)/i.test(u)) return true;
+  return false;
 }
 
 // "₹1,299.00" / "Rs. 1299" / "1,299" -> 1299  (warna null)
@@ -457,7 +460,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v18'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v19'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -577,7 +580,7 @@ function dbgSkip(msg) {
 async function evaluateAndRender() {
   const site = detectSite(location.hostname);
   if (!site) return;
-  if (!isCheckoutish(location.pathname + location.search)) {
+  if (!isCheckoutish(location.pathname + location.search, location.hostname)) {
     removeWidget();
     dbgSkip('skip: URL checkout-jaisa nahi — ' + location.pathname);
     return;
@@ -620,11 +623,12 @@ async function evaluateAndRender() {
 
     const claimed = new Set();
     const bwLogged = new Set(); // bank-wide log ek baar per bank (190 cards pe spam na ho)
-    // Card-selection page? (native ya Flipkart-jaisa custom radio, ya card-title rows). Aise
-    // page par page-wide "bank-wide" fallback BAND — warna ek card ka ₹3000 dusre card pe leak
-    // ho jata hai (Flipkart Axis pe ICICI ka ₹3000 phantom). Har card ka apna row-offer/page-actual hi sach.
-    const isCardSelectPage = cardOffers.length > 0 || !!document.querySelector('input[type="radio"]')
-      || findCardTitleNodes(document).length > 0;
+    // Per-card offers wala page? (cardOffers ya bank+last4 card-title rows). Aise page par hi
+    // page-wide "bank-wide" fallback BAND — warna ek card ka ₹3000 dusre card pe leak ho jata
+    // (Flipkart Axis pe ICICI ka ₹3000 phantom). NOTE: bare radios se check NAHI karte — Ajio
+    // payment page pe payment-mode radios (UPI/EMI/COD) hote hain par per-card offer nahi, aur
+    // "AU 10% / HSBC 12%" jaise page-wide bank offers ko dikhana hai.
+    const isCardSelectPage = cardOffers.length > 0 || findCardTitleNodes(document).length > 0;
     ownedRanked = window.CardWizEngine.recommend(DB, { ...baseOpts, ownedCardIds: owned });
     ownedRanked.forEach((r) => {
       // Is card ke wallet entries ke saved last4 (ek card ke multiple entries ho sakte).

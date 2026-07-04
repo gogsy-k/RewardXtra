@@ -113,4 +113,22 @@ test('cap NOT falsely taken from "up to 10%"', () => {
   assert.strictEqual(o.cap, null);
 });
 
+// --- Ajio payment-page real strings: AU / HSBC banks + credit-and-debit ---
+test('AU offer: bank detected, min-spend + cap parsed', () => {
+  const o = parseOffer('Get 10% Instant Discount of up to Rs. 1000 on a minimum transaction value of Rs 3000 using AU Credit Cards');
+  assert.strictEqual(o.bank, 'AU Small Finance Bank'); // catalog naam se exact match
+  assert.strictEqual(o.percent, 10);
+  assert.strictEqual(o.cap, 1000);
+  assert.strictEqual(o.minSpend, 3000);
+  assert.strictEqual(offerValue(o, 4009), 401);  // 10% of 4009 = 400.9 -> 401 (< cap, min met)
+  assert.strictEqual(offerValue(o, 2500), 0);    // 2500 < 3000 min -> nahi milega
+});
+test('HSBC "Credit and Debit Cards" NOT debit-only (shows up)', () => {
+  const o = parseOffer('Get 12% Instant Discount of up to Rs. 1000 on a minimum transaction value of Rs 3000 using HSBC Bank Credit and Debit Cards');
+  assert.strictEqual(o.bank, 'HSBC');
+  assert.strictEqual(o.debitOnly, false);        // credit bhi mentioned hai
+  const best = bestOffersByBank(['Get 12% Instant Discount of up to Rs. 1000 on a minimum transaction value of Rs 3000 using HSBC Bank Credit and Debit Cards'], 4009);
+  assert.strictEqual(best.HSBC.value, 481);       // 12% of 4009 = 481
+});
+
 console.log(`\n${passed} tests passed.`);

@@ -24,7 +24,13 @@ const BANK_PATTERNS = [
   { bank: 'IndusInd', re: /indusind/i },
   { bank: 'Citi', re: /citi/i },
   { bank: 'Bank of Baroda', re: /bank of baroda|\bbob\b/i },
-  { bank: 'Federal', re: /federal bank/i },
+  { bank: 'Federal Bank', re: /federal bank/i },
+  // canonical naam catalog (data/cards.json) ke `bank` se BILKUL match hone chahiye — warna
+  // bank-wide offer owned card se attach nahi hoga (offersByBank[r.bank] exact key lookup).
+  { bank: 'HSBC', re: /hsbc/i },
+  { bank: 'Standard Chartered', re: /standard chartered|\bsc\s*bank/i },
+  { bank: 'AU Small Finance Bank', re: /\bau\s*(?:small finance|bank|credit|debit)|\bau sfb\b/i },
+  { bank: 'DBS Bank', re: /\bdbs\b/i },
 ];
 
 function detectBank(text) {
@@ -47,8 +53,10 @@ function parseOffer(text) {
   const bank = detectBank(text);
   if (!bank) return null; // bina bank ke offer kaam ka nahi
 
-  const isCredit = /credit\s*card/i.test(text);
-  const isDebit = /debit\s*card/i.test(text);
+  // "credit" / "debit" ka zikr kaafi (poora "credit card" zaroori nahi) — "Credit and Debit
+  // Cards" jaisa text pehle galti se debit-only ban jaata tha (credit path chhoot jaata).
+  const isCredit = /\bcredit\b/i.test(text);
+  const isDebit = /\bdebit\b/i.test(text);
   const noCostEmi = /no\s*cost\s*emi/i.test(text);
 
   const pct = text.match(/(\d+(?:\.\d+)?)\s*%/);
