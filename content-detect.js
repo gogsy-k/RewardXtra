@@ -290,21 +290,41 @@ function ctxLast4s(ctx) {
   return out;
 }
 
-function matchCardOffer(cardName, last4List, cardOffers, claimed) {
+// Kya offer-ctx me card ka BANK likha hai? (last4 galti se kisi aur bank ke card pe
+// daal do to offer attach nahi hoga — bank bhi match hona zaroori.)
+function bankMatchesCtx(bank, ctx) {
+  if (!bank || !ctx) return false;
+  const b = String(bank).toLowerCase();
+  if (/american express|amex/.test(b)) return /american express|amex/.test(ctx);
+  if (b === 'sbi' || b.includes('state bank')) return /\bsbi\b|state bank/.test(ctx);
+  if (b.startsWith('bank of')) return ctx.includes(b);              // bank of baroda / india
+  let key = b.split(/\s+/)[0];                                       // icici / hdfc / axis / citi / au / dbs …
+  if (key === 'standard') return ctx.includes('standard chartered');
+  if (key.length <= 3) return new RegExp('\\b' + key + '\\b').test(ctx); // au/sbi/rbl/dbs — word boundary
+  return ctx.includes(key);
+}
+
+function matchCardOffer(cardName, cardBank, last4List, cardOffers, claimed) {
   if (!cardOffers || !cardOffers.length) return 0;
   for (const l4 of (last4List || [])) {
     if (!l4) continue;
-    const hits = cardOffers.filter((o) => ctxLast4s(o.ctx).includes(l4));
+    const l4hits = cardOffers.filter((o) => ctxLast4s(o.ctx).includes(l4));
+    const hits = l4hits.filter((o) => bankMatchesCtx(cardBank, o.ctx));
+    if (l4hits.length && !hits.length) {
+      dbg('⚠️ last4', l4, 'mila par BANK mismatch — card:', cardBank, '| ctx:', l4hits[0].ctx.slice(0, 60), '→ skip');
+      continue;
+    }
     if (hits.length) {
       if (claimed) hits.forEach((h) => claimed.add(h));
-      dbg('offer matched via last4', l4, ':', cardName, '→ ₹' + Math.min(...hits.map((o) => o.amt)));
+      dbg('offer matched via last4+bank', l4, '(' + cardBank + '):', cardName, '→ ₹' + Math.min(...hits.map((o) => o.amt)));
       return Math.min(...hits.map((o) => o.amt));
     }
   }
   const tokens = String(cardName).toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/)
     .filter((t) => t.length > 2 && !OFFER_GENERIC_WORDS.has(t));
   if (!tokens.length) return 0; // koi distinctive token nahi -> safe: no offer (over-credit se bacho)
-  const matches = cardOffers.filter((o) => tokens.every((t) => o.ctx.includes(t)));
+  // Naam-token match pe bhi bank verify karo.
+  const matches = cardOffers.filter((o) => tokens.every((t) => o.ctx.includes(t)) && bankMatchesCtx(cardBank, o.ctx));
   if (matches.length && claimed) matches.forEach((m2) => claimed.add(m2));
   return matches.length ? Math.min(...matches.map((o) => o.amt)) : 0;
 }
@@ -420,7 +440,7 @@ async function evaluateAndRender() {
         .filter((c) => c.cardId === r.id)
         .map((c) => String(c.last4 || '').replace(/\D/g, ''))
         .filter((s) => s.length === 4);
-      const off = matchCardOffer(r.name, l4s, cardOffers, claimed); // sirf isi card ka offer
+      const off = matchCardOffer(r.name, r.bank, l4s, cardOffers, claimed); // sirf isi card ka offer (bank verified)
       r.offerValue = off > 0 ? Math.min(off, amount || off) : 0;
       r.total = r.savings + r.offerValue;
     });
