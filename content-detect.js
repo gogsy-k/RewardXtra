@@ -276,9 +276,21 @@ const OFFER_GENERIC_WORDS = new Set([
   'american', 'express', 'federal', 'dbs', 'baroda', 'standard', 'chartered', 'citi', 'onecard', 'first',
 ]);
 
-// Card ko uske apne page-offer se match karo (naam ke distinctive tokens se). No match -> 0.
-function matchCardOffer(cardName, cardOffers) {
+// Card ko uske apne page-offer se match karo. Priority:
+//   1) last4 — wallet me saved "•••• 3003" vs page ka "ending in 3003" = 100% pakka match
+//      (generic rows jaise "ICICI Bank Credit Card ending in 3003" isi se attribute hote hain).
+//   2) naam ke distinctive tokens (e.g. "amazon pay").
+// No confident match -> 0 (kabhi over-credit nahi).
+function matchCardOffer(cardName, last4List, cardOffers) {
   if (!cardOffers || !cardOffers.length) return 0;
+  for (const l4 of (last4List || [])) {
+    if (!l4) continue;
+    const hits = cardOffers.filter((o) => o.ctx.includes('ending in ' + l4));
+    if (hits.length) {
+      dbg('offer matched via last4', l4, ':', cardName);
+      return Math.min(...hits.map((o) => o.amt));
+    }
+  }
   const tokens = String(cardName).toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/)
     .filter((t) => t.length > 2 && !OFFER_GENERIC_WORDS.has(t));
   if (!tokens.length) return 0; // koi distinctive token nahi -> safe: no offer (over-credit se bacho)
@@ -380,7 +392,12 @@ async function evaluateAndRender() {
   if (owned.length) {
     ownedRanked = window.CardWizEngine.recommend(DB, { ...baseOpts, ownedCardIds: owned });
     ownedRanked.forEach((r) => {
-      const off = matchCardOffer(r.name, cardOffers); // sirf isi card ka offer
+      // Is card ke wallet entries ke saved last4 (ek card ke multiple entries ho sakte).
+      const l4s = (myCards || [])
+        .filter((c) => c.cardId === r.id)
+        .map((c) => String(c.last4 || '').replace(/\D/g, ''))
+        .filter((s) => s.length === 4);
+      const off = matchCardOffer(r.name, l4s, cardOffers); // sirf isi card ka offer
       r.offerValue = off > 0 ? Math.min(off, amount || off) : 0;
       r.total = r.savings + r.offerValue;
       if (r.offerValue > 0) dbg('offer matched:', r.name, '→ +₹' + r.offerValue);
@@ -732,5 +749,5 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
 
 // Node testing ke liye pure helpers export.
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { detectSite, isCheckoutish, parseRupee };
+  module.exports = { detectSite, isCheckoutish, parseRupee, matchCardOffer };
 }
