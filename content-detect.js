@@ -485,7 +485,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v24'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v25'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -1017,8 +1017,8 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
       .bininput::placeholder { color:#5B6478; letter-spacing:normal; }
       .binresult { font-size:9px; color:#B7C0D4; margin-top:5px; line-height:1.5; min-height:0; }
       .binresult:empty { margin-top:0; }
-      .binresult.ok { color:#34D399; }
       .binresult b { color:#E8ECF4; }
+      .binnote { display:block; margin-top:3px; font-size:8px; color:#FBBF24; line-height:1.4; }
       @media (prefers-reduced-motion: reduce) { .box { animation: none !important; } }
     </style>
     <div class="box">
@@ -1080,8 +1080,11 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
       const info = (api && api.binToBank) ? api.binToBank(digits) : { bank: null, network: null };
       const net = info.network ? ' · ' + escapeHtml(info.network) : '';
       if (info.bank && pageOffers[info.bank]) {
-        binResult.className = 'binresult ok';
-        binResult.innerHTML = `✅ <b>${escapeHtml(info.bank)}${net}</b><br>${escapeHtml(cleanOffer(pageOffers[info.bank]))}`;
+        // HINT hai, guarantee NAHI — BIN sirf bank batata hai; offer "selected cards" pe hota
+        // hai. Exact eligibility site ke apne checker se (full number wahan, hamare paas nahi).
+        binResult.className = 'binresult';
+        binResult.innerHTML = `<b>${escapeHtml(info.bank)}${net}</b> — ${escapeHtml(cleanOffer(pageOffers[info.bank]))}`
+          + `<br><span class="binnote">${escapeHtml(T('cw_bin_hint'))}</span>`;
       } else if (info.bank) {
         binResult.innerHTML = `<b>${escapeHtml(info.bank)}${net}</b> — ${escapeHtml(T('cw_bin_nooffer'))}`;
       } else {
