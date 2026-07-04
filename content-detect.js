@@ -415,6 +415,10 @@ function getWalletState() {
 let lastSignature = null; // dohraav rokne ke liye (SPA re-eval)
 let frameOffers = [];     // payment-iframe (apx) se postMessage se aaye card-offers
 let cwMinimized = false;  // ✕ se chip me minimize (NON-persistent: reload/nav pe full widget wapas)
+// Page-actual offers per card: jab jab wo card SELECT hua, summary se pakka {offer,cashback}
+// mila — yaad rakhte hain taaki dusra card select karne pe purane card ka number NA badle.
+// (Non-persistent — nav/reload pe clear. Key = cardId.)
+const pageActualCache = {};
 
 // i18n helper — CardWizI18n.t() + {var} interpolation. Falls back to key if i18n missing.
 function T(key, vars) {
@@ -433,7 +437,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v12'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v13'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -588,6 +592,11 @@ async function evaluateAndRender() {
     dbg('wallet last4 entries (' + walletL4.length + '):', walletL4.slice(0, 15).join(', ') || 'KOI NAHI — isliye generic rows match nahi ho sakte');
 
     const claimed = new Set();
+    // Card-selection page? (native ya Flipkart-jaisa custom radio, ya card-title rows). Aise
+    // page par page-wide "bank-wide" fallback BAND — warna ek card ka ₹3000 dusre card pe leak
+    // ho jata hai (Flipkart Axis pe ICICI ka ₹3000 phantom). Har card ka apna row-offer/page-actual hi sach.
+    const isCardSelectPage = cardOffers.length > 0 || !!document.querySelector('input[type="radio"]')
+      || findCardTitleNodes(document).length > 0;
     ownedRanked = window.CardWizEngine.recommend(DB, { ...baseOpts, ownedCardIds: owned });
     ownedRanked.forEach((r) => {
       // Is card ke wallet entries ke saved last4 (ek card ke multiple entries ho sakte).
@@ -596,10 +605,9 @@ async function evaluateAndRender() {
         .map((c) => String(c.last4 || '').replace(/\D/g, ''))
         .filter((s) => s.length === 4);
       let off = matchCardOffer(r.name, r.bank, l4s, cardOffers, claimed); // sirf isi card ka offer (bank verified)
-      // Fallback SIRF cart-style pages ke liye (jahan card-specific rows hoti hi nahi).
-      // Payment page (cardOffers.length > 0) pe page-wide sale banners ("Save upto ₹5500")
-      // kisi card pe nahi lagne chahiye — har card ka apna row-offer hi sach hai.
-      if (!off && cardOffers.length === 0) {
+      // Fallback SIRF cart-style pages ke liye (na card rows, na radios/titles). Card-selection
+      // page par NAHI — wahan cross-card leak ki jad yahi tha.
+      if (!off && cardOffers.length === 0 && !isCardSelectPage) {
         const m = offersByBank[r.bank];
         if (m && m.value > 0) {
           off = m.value;
@@ -610,8 +618,9 @@ async function evaluateAndRender() {
       r.total = r.savings + r.offerValue;
     });
 
-    // ── SELECTED card: page ke summary ka EXACT offer + cashback use karo (estimate override) ──
-    // Ye AUTHORITATIVE hai — "Bank Offer Discount -₹2,000" seedha page se; estimate override.
+    // ── SELECTED card: page summary se EXACT offer + cashback (authoritative) → CACHE me daalo ──
+    // "Bank Offer Discount -₹2,000" seedha page se. Cache isliye: dusra card select karne pe
+    // is card ka number NA badle — jise ek baar select karke asli number dekh liya, sthir rahe.
     const sel = selectedCardInfo();
     if (sel) {
       const sumOffer = readSummaryLine(/(bank offer discount|instant bank discount)/i);
@@ -619,26 +628,26 @@ async function evaluateAndRender() {
       dbg('SELECTED:', (sel.bank || '?') + ' ' + (sel.last4 || '?'),
         '| page offer ₹' + sumOffer, '| page cashback ₹' + sumCash, '| ctx:', sel.ctx.slice(0, 60));
       if (sumOffer > 0 || sumCash > 0) {
-        // Do cards ka last4 same ho sakta hai (Coral + Instant Platinum dono •3003) — sabko
-        // page-actual do (page inhe distinguish nahi karta; number waise bhi same hai).
-        const selCards = ownedRanked.filter((r) => {
+        // last4 do cards me same ho sakta hai (Coral + Instant Platinum dono •3003) — sabko cache.
+        ownedRanked.forEach((r) => {
           const l4s = (myCards || []).filter((c) => c.cardId === r.id)
             .map((c) => String(c.last4 || '').replace(/\D/g, '')).filter((s) => s.length === 4);
-          return cardMatchesCtx(r.name, r.bank, l4s, sel.ctx);
+          if (!cardMatchesCtx(r.name, r.bank, l4s, sel.ctx)) return;
+          const prev = pageActualCache[r.id] || {};
+          pageActualCache[r.id] = { offer: sumOffer || prev.offer || 0, cashback: sumCash || prev.cashback || 0 };
         });
-        if (selCards.length) {
-          selCards.forEach((selCard) => {
-            if (sumOffer > 0) selCard.offerValue = Math.min(sumOffer, amount || sumOffer);
-            if (sumCash > 0) { selCard.savings = sumCash; selCard.capped = false; selCard.capExhausted = false; }
-            selCard.total = selCard.savings + selCard.offerValue;
-            selCard.pageActual = true; // page se pakka number (estimate nahi)
-            dbg('  ✓ page-actuals →', selCard.name, '| offer ₹' + selCard.offerValue + ' | cashback ₹' + (sumCash || selCard.savings));
-          });
-        } else {
-          dbg('  ✗ SELECTED (' + sel.bank + ' ' + sel.last4 + ') owned me match nahi — override skip');
-        }
       }
     }
+    // Cached page-actuals SABHI owned cards pe lagao — number sthir rakhne ke liye.
+    ownedRanked.forEach((r) => {
+      const pa = pageActualCache[r.id];
+      if (!pa) return;
+      if (pa.offer > 0) r.offerValue = Math.min(pa.offer, amount || pa.offer);
+      if (pa.cashback > 0) { r.savings = pa.cashback; r.capped = false; r.capExhausted = false; }
+      r.total = r.savings + r.offerValue;
+      r.pageActual = true; // page se pakka number (estimate nahi)
+      dbg('page-actual →', r.name, '| offer ₹' + r.offerValue + ' | cashback ₹' + r.savings);
+    });
     ownedRanked.sort((a, b) => (b.total - a.total) || (b.rate - a.rate));
     // Har render ka top-5 (reward + offer breakdown) — ranking flicker pakadne ke liye.
     dbg('top5:', ownedRanked.slice(0, 5).map((r) => `${r.name} = ₹${money(r.savings)} + off₹${money(r.offerValue)}`));
