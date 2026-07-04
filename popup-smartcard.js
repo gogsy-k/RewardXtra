@@ -1005,13 +1005,15 @@ function openCardDetailModal(mc, cat) {
   if (!overlay || !content) return;
   content.innerHTML = '';
 
-  // ── Colored card-face header strip ──
+  // ── Header: cohesive dark strip (website palette) with a subtle bank-colored badge ──
   const hd = document.createElement('div');
   hd.className = 'cd-card-hd';
-  hd.style.background = bankCardGradient(cat.bank);
+  const accent = bankColor(cat.bank);
 
   const emojiEl = document.createElement('span');
   emojiEl.className = 'cd-emoji';
+  emojiEl.style.background = accent + '22';   // faint bank tint (identity, not garish)
+  emojiEl.style.borderColor = accent + '66';
   emojiEl.textContent = bankEmoji(cat.bank);
 
   const info = document.createElement('div');
