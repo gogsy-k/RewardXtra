@@ -54,8 +54,42 @@ const BANK_APPLY: Record<string, string> = {
   "Bank of Baroda": "https://www.bobcard.co.in/",
 };
 
-// (Optionally affiliate-wrapped) apply URL for a card's bank, or null if unknown.
-export function cardApplyUrl(bank: string): string | null {
+// ── INRDeals CPA affiliate apply links (publisher gur478927530) ──────────────────────────
+// EARN a commission on a NEW card application. Format verified from INRDeals' own generated
+// links: id + url + campaign drive tracking (RAW url append — that's how INRDeals builds them).
+// INRDeals only has CPA for these ~13 cards — the rest of the catalog falls back to the direct
+// bank page (no commission) until we add CardInsider/BankBazaar. Harvested 2026-07-05.
+const INR_PUB = "gur478927530";
+const inr = (url: string, campaign: string) =>
+  `https://inr.deals/redirect?id=${INR_PUB}&src=cardwiz&url=${url}&campaign=${campaign}`;
+
+// Card-specific (override bank-level) — keyed by catalog card id. Co-brands / distinct campaigns.
+const CARD_APPLY_AFFILIATE: Record<string, string> = {
+  "sbi-simplyclick": inr("https://www.sbicard.com", "cpa_lead"),
+  "sbi-cashback": inr("https://www.sbicard.com", "cpa_cb"),
+  "scapia-federal": inr("https://apply.scapia.cards/", "cpa"),
+  "jupiter-edge-csb": inr("https://web.jupiter.money/rupay-csb/web-ob/landing", "cpa"),
+};
+
+// Bank-level — every card of the bank routes to the bank's INRDeals apply flow (earns on apply).
+const BANK_APPLY_AFFILIATE: Record<string, string> = {
+  HDFC: inr("https://applyonline.hdfcbank.com/cards/credit-cards.html", "cpl"),
+  Axis: inr("https://web.axis.bank.in/DigitalChannel/WebForm/", "cpl"),
+  SBI: inr("https://www.sbicard.com", "cpa_lead"),
+  "AU Small Finance Bank": inr("https://cconboarding.aubank.in/auccself/#/landing", "cpa"),
+  "Federal Bank": inr("https://creditcards.federalbank.co.in", "cpa"),
+  "IDFC FIRST": inr("https://www.idfcfirstbank.com/credit-card/ntb-diy/apply", "cpa"),
+  IndusInd: inr("https://induseasycredit.indusind.bank.in/", "cpa"),
+  HSBC: inr("https://www.accountopening.hsbc.co.in/credit-cards/", "cpa"),
+  "Bank of Baroda": inr("https://mycard.bobcard.tech/splash-screen", "cpl"),
+  "Yes Bank": inr("https://applyonline.getpopcard.co/", "cpl"), // only Yes CPA (POP co-brand)
+};
+
+// Apply URL for a card. Priority: card-specific affiliate → bank-level affiliate → direct bank
+// page (no commission). Pass cardId for card-specific matches (co-brands / distinct campaigns).
+export function cardApplyUrl(bank: string, cardId?: string): string | null {
+  if (cardId && CARD_APPLY_AFFILIATE[cardId]) return CARD_APPLY_AFFILIATE[cardId];
+  if (BANK_APPLY_AFFILIATE[bank]) return BANK_APPLY_AFFILIATE[bank];
   const dest = BANK_APPLY[bank];
   if (!dest) return null;
   return LINK_WRAP_BASE ? LINK_WRAP_BASE + encodeURIComponent(dest) : dest;

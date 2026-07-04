@@ -49,7 +49,7 @@ export default async function CardDetail(props: PageProps<"/cards/[id]">) {
     { value: card.network, label: "Network" },
   ];
 
-  const applyHref = cardApplyUrl(card.bank);
+  const applyHref = cardApplyUrl(card.bank, card.id);
 
   return (
     <div className="mx-auto max-w-4xl px-5 py-10">
