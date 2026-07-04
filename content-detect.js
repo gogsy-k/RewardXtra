@@ -261,6 +261,7 @@ function getWalletState() {
 }
 
 let lastSignature = null; // dohraav rokne ke liye (SPA re-eval)
+let frameOffers = [];     // payment-iframe (apx) se postMessage se aaye card-offers
 
 // i18n helper — CardWizI18n.t() + {var} interpolation. Falls back to key if i18n missing.
 function T(key, vars) {
@@ -307,7 +308,10 @@ async function evaluateAndRender() {
   // ── "Your cards" — owned cards, CARD-SPECIFIC page offers factored in ──
   const offerTexts = readOffersFromDOM();
   const offersByBank = window.CardWizOffers.bestOffersByBank(offerTexts, amount || 0);
-  const cardOffers = readPaymentCardOffers(); // har card ka apna instant offer (bank-level nahi)
+  // Har card ka apna instant offer: is frame se + payment-iframe se aaye hue (Amazon ka
+  // naya checkout card list ko apx secure IFRAME me rakhta hai — wahan ka scan
+  // postMessage se frameOffers me aata hai).
+  const cardOffers = readPaymentCardOffers().concat(frameOffers);
   dbg('site:', site.merchant, '| amount:', amount, '| owned:', owned.length, '| premium:', isPremium);
   dbg('page card-offers:', cardOffers.map((o) => `₹${o.amt} @ "${o.ctx.slice(0, 70)}…"`));
   let ownedRanked = [];
@@ -336,7 +340,7 @@ async function evaluateAndRender() {
     .map((m) => m.offer.bank);
 
   // Same state pe baar-baar re-render mat karo.
-  const sig = `${site.category}|${amount}|${owned.length}|${isPremium}|${ownedRanked[0] && ownedRanked[0].id}|${ownedRanked[0] && ownedRanked[0].total}|${notOwned[0] && notOwned[0].id}|${offerTexts.length}`;
+  const sig = `${site.category}|${amount}|${owned.length}|${isPremium}|${ownedRanked[0] && ownedRanked[0].id}|${ownedRanked[0] && ownedRanked[0].total}|${notOwned[0] && notOwned[0].id}|${offerTexts.length}|${cardOffers.length}`;
   if (sig === lastSignature) return;
   lastSignature = sig;
 
@@ -544,6 +548,52 @@ function escapeHtml(s) {
 // ---------- Init + SPA navigation handling ----------
 
 function init() {
+  // ── FRAME MODE ── Amazon ka naya checkout payment-cards ko secure iframe (apx) me
+  // rakhta hai. Frames me widget NAHI banate — sirf card-offers scan karke top frame
+  // ko postMessage bhejte hain.
+  if (window.top !== window) {
+    if (!detectSite(location.hostname)) return; // sirf merchant frames
+    let sent = '';
+    const scanAndSend = () => {
+      const offers = readPaymentCardOffers();
+      if (!offers.length) return;
+      const key = JSON.stringify(offers);
+      if (key === sent) return; // same data dobara mat bhejo
+      sent = key;
+      try { window.top.postMessage({ type: 'cardwiz-card-offers', offers }, '*'); } catch (_) { /* noop */ }
+    };
+    let ft = 0;
+    const floop = () => { scanAndSend(); if (++ft < 20) setTimeout(floop, 1500); };
+    setTimeout(floop, 800);
+    if (typeof MutationObserver !== 'undefined' && document.body) {
+      let fdeb = null;
+      new MutationObserver(() => {
+        if (fdeb) return;
+        fdeb = setTimeout(() => { fdeb = null; scanAndSend(); }, 800);
+      }).observe(document.body, { childList: true, subtree: true });
+    }
+    return;
+  }
+
+  // ── TOP FRAME ── iframe se aaye card-offers receive karo.
+  window.addEventListener('message', (e) => {
+    const d = e.data;
+    if (!d || d.type !== 'cardwiz-card-offers' || !Array.isArray(d.offers)) return;
+    let fromMerchant = false;
+    try { fromMerchant = !!detectSite(new URL(e.origin).hostname); } catch (_) { /* ignore */ }
+    if (!fromMerchant) return; // sirf hamare merchant domains ke frames
+    const clean = d.offers
+      .filter((o) => o && typeof o.amt === 'number' && o.amt > 0 && o.amt <= 100000 && typeof o.ctx === 'string')
+      .map((o) => ({ amt: o.amt, ctx: String(o.ctx).slice(0, 600).toLowerCase() }))
+      .slice(0, 20);
+    if (!clean.length) return;
+    if (JSON.stringify(clean) === JSON.stringify(frameOffers)) return; // no change
+    frameOffers = clean;
+    dbg('iframe se card-offers mile:', clean.map((o) => '₹' + o.amt));
+    lastSignature = null;
+    evaluateAndRender().catch(() => {});
+  });
+
   // Pehli baar: thoda delay (checkout totals async load hote hain), phir retries.
   let tries = 0;
   const retry = () => {
