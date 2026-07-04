@@ -690,9 +690,20 @@ function renderMyCards() {
     empty.className = 'empty';
     empty.textContent = CardWizI18n.t('mc_empty');
     els.cardsList.appendChild(empty);
-    return;
+  } else {
+    for (const { mc, cat } of items) els.cardsList.appendChild(makeCardRow(mc, cat));
   }
-  for (const { mc, cat } of items) els.cardsList.appendChild(makeCardRow(mc, cat));
+  positionCardForm(); // edit form ko sahi jagah (edited row ke neeche / default) rakho
+}
+
+// Shared edit/add form ko edit ho rahe card ke row ke turant neeche rakho.
+// Warna default: "+ Add a new card" button ke neeche (add-new ke liye).
+function positionCardForm() {
+  if (editingId != null && !els.cardForm.hidden) {
+    const row = els.cardsList.querySelector(`.mycard[data-wallet-id="${editingId}"]`);
+    if (row) { row.insertAdjacentElement('afterend', els.cardForm); return; }
+  }
+  els.addCardBtn.insertAdjacentElement('afterend', els.cardForm);
 }
 
 function buildPortfolioScoreWidget() {
@@ -1052,6 +1063,7 @@ function openCardDetailModal(mc, cat) {
 function makeCardRow(mc, cat) {
   const row = document.createElement('div');
   row.className = 'mycard';
+  row.dataset.walletId = mc.id; // edit form ko iske neeche position karne ke liye
   const accent = bankAccentColor(cat.bank);
   row.style.borderLeftColor = accent;
 
@@ -1179,12 +1191,14 @@ function openForm(editId = null) {
   updateFormForCardType(); // debit -> bill due fields hide
   els.cardForm.hidden = false;
   els.addCardBtn.hidden = true;
+  positionCardForm(); // edited card ke row ke neeche kholo (ya add-new default)
 }
 
 function closeForm() {
   els.cardForm.hidden = true;
   els.addCardBtn.hidden = false;
   editingId = null;
+  positionCardForm(); // wapas default position pe
 }
 
 function saveCard() {
@@ -1230,8 +1244,8 @@ function saveCard() {
   cardsTab = cardTypeOf(catalogCard(cardId)); // added/edited card ke tab pe switch
   saveWallet();
   pushIfSyncing(); // Phase 10: cloud update
-  renderMyCards();
   closeForm();
+  renderMyCards();
 }
 
 function deleteCard(id) {
