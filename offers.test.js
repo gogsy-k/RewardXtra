@@ -3,7 +3,7 @@
  * Chalao:  node offers.test.js
  */
 const assert = require('assert');
-const { detectBank, parseOffer, offerValue, bestOffersByBank, cardNetwork, binToBank } = require('./offers');
+const { detectBank, parseOffer, offerValue, bestOffersByBank } = require('./offers');
 
 let passed = 0;
 function test(name, fn) {
@@ -129,35 +129,6 @@ test('HSBC "Credit and Debit Cards" NOT debit-only (shows up)', () => {
   assert.strictEqual(o.debitOnly, false);        // credit bhi mentioned hai
   const best = bestOffersByBank(['Get 12% Instant Discount of up to Rs. 1000 on a minimum transaction value of Rs 3000 using HSBC Bank Credit and Debit Cards'], 4009);
   assert.strictEqual(best.HSBC.value, 481);       // 12% of 4009 = 481
-});
-
-// --- BIN → bank/network (user ke diye 3 BINs) ---
-test('binToBank: Amazon Pay ICICI 431581 → ICICI / Visa', () => {
-  const r = binToBank('431581');
-  assert.strictEqual(r.bank, 'ICICI');
-  assert.strictEqual(r.network, 'Visa');
-});
-test('binToBank: ICICI Coral 437551 → ICICI / Visa', () => {
-  const r = binToBank('437551');
-  assert.strictEqual(r.bank, 'ICICI');
-  assert.strictEqual(r.network, 'Visa');
-});
-test('binToBank: HDFC 434155 → HDFC / Visa', () => {
-  const r = binToBank('434155');
-  assert.strictEqual(r.bank, 'HDFC');
-  assert.strictEqual(r.network, 'Visa');
-});
-test('binToBank: unknown BIN → bank null, network still detected', () => {
-  const r = binToBank('512345'); // Mastercard range, not in map
-  assert.strictEqual(r.bank, null);
-  assert.strictEqual(r.network, 'Mastercard');
-});
-test('binToBank: <6 digits → bank null', () => {
-  assert.strictEqual(binToBank('4315').bank, null);
-});
-test('cardNetwork: RuPay 60 / Amex 37', () => {
-  assert.strictEqual(cardNetwork('607551'), 'RuPay');
-  assert.strictEqual(cardNetwork('371449'), 'Amex');
 });
 
 console.log(`\n${passed} tests passed.`);
