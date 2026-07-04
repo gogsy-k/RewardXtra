@@ -71,7 +71,7 @@ function affiliateLandingUrl(site) {
 // Sirf cart/checkout/payment jaise pages pe widget dikhao — har page pe nahi.
 function isCheckoutish(pathAndSearch, host) {
   const u = (pathAndSearch || '').toLowerCase();
-  if (/(cart|checkout|\/buy|payment|\/gp\/buy|order-summary|bag|booking|\/review|order-payment|buytickets)/.test(u)) return true;
+  if (/(cart|checkout|\/buy|payment|\/gp\/buy|order-summary|bag|booking|\/review|order-payment|buytickets|offers-listing)/.test(u)) return true;
   // Ajio ka payment alag subdomain (payment.services.ajio.com/pay) pe hota hai — "/pay" bhi checkout.
   if (/\.ajio\.com$/i.test(host || '') && /^\/pay(?:\/|\?|$)/i.test(u)) return true;
   return false;
@@ -485,7 +485,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v22'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v23'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
