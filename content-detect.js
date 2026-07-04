@@ -411,7 +411,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v6'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v7'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -420,15 +420,25 @@ function dbg(...args) {
   try { console.log('[CardWiz] [' + tag + ']', ...args); } catch (_) { /* noop */ }
 }
 
+let lastSkipMsg = ''; // skip-reason ek hi baar log ho (spam nahi)
+function dbgSkip(msg) {
+  if (msg !== lastSkipMsg) { lastSkipMsg = msg; dbg(msg); }
+}
+
 async function evaluateAndRender() {
   const site = detectSite(location.hostname);
   if (!site) return;
   if (!isCheckoutish(location.pathname + location.search)) {
     removeWidget();
+    dbgSkip('skip: URL checkout-jaisa nahi — ' + location.pathname);
     return;
   }
   // User ne is page pe widget close kiya tha? to mat dikhao.
-  if (sessionStorage.getItem('scs-dismissed') === location.pathname) return;
+  if (sessionStorage.getItem('scs-dismissed') === location.pathname) {
+    dbgSkip('skip: is path pe ✕ se dismiss kiya tha (is tab-session ke liye) — undo: sessionStorage.removeItem("scs-dismissed") — ' + location.pathname);
+    return;
+  }
+  lastSkipMsg = '';
 
   const DB = await window.CardWizCatalog.load();
   const { owned, capUsage, myCards, isPremium } = await getWalletState();
