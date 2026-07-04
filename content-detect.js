@@ -485,7 +485,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v23'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v24'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -737,7 +737,11 @@ async function evaluateAndRender() {
   if (sig === lastSignature) return;
   lastSignature = sig;
 
-  renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned, isPremium);
+  // BIN-check ke liye: bank -> page pe mila offer text (user 6 digit daale to uska card match ho).
+  const pageOffers = {};
+  Object.values(offersByBank).forEach((m) => { if (m.offer && m.offer.bank) pageOffers[m.offer.bank] = String(m.offer.raw || ''); });
+
+  renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned, isPremium, pageOffers);
 }
 
 // ---------- Shadow-DOM Widget ----------
@@ -852,7 +856,7 @@ function renderMinChip() {
   document.body.appendChild(host);
 }
 
-function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned, isPremium) {
+function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned, isPremium, pageOffers) {
   if (cwMinimized) { renderMinChip(); return; }
   removeWidget();
 
@@ -926,6 +930,18 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
     ? `<div class="offers">💡 ${T('cw_more_offers')}: ${escapeHtml(otherOffers.join(', '))}</div>`
     : '';
 
+  // BIN-check: page pe bank-offers hain to "kisi card pe offer check karo" input dikhao.
+  // User pehle 6 digit (BIN) daale → bank/network pehchano → us bank ka offer dikhao.
+  // Full card number KABHI nahi, kuch store nahi (sirf memory me 6 digit). [[decision-no-full-card-numbers]]
+  const hasPageOffers = pageOffers && Object.keys(pageOffers).length > 0;
+  const binHtml = hasPageOffers
+    ? `<div class="bincheck">
+         <div class="bintitle">${T('cw_bin_title')}</div>
+         <input class="bininput" type="text" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="${escapeHtml(T('cw_bin_ph'))}" />
+         <div class="binresult"></div>
+       </div>`
+    : '';
+
   // Phase 6: affiliate "Buy via our link" (no extra cost) + disclosure.
   const aff = window.CardWizAffiliate
     ? window.CardWizAffiliate.affiliateUrl(site.category, affiliateLandingUrl(site))
@@ -993,6 +1009,16 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
       .apply:hover { background:#818CF8; }
       .upgrade { width:100%; margin-bottom:8px; background:linear-gradient(90deg,#6366F1,#818CF8); color:#fff; border:none; border-radius:8px; padding:8px; font-size:10px; font-weight:800; cursor:pointer; font-family:inherit; }
       .cwempty { font-size:10px; color:#8A93AC; text-align:center; padding:18px 8px; }
+      .bincheck { margin-top:8px; padding:8px; background:#161C2D; border:1px solid #2A3450; border-radius:9px; }
+      .bintitle { font-size:10px; font-weight:700; color:#B7C0D4; margin-bottom:5px; }
+      .bininput { width:100%; box-sizing:border-box; background:#0C1018; color:#E8ECF4; border:1px solid #2A3450;
+                  border-radius:6px; padding:6px 8px; font-size:12px; font-family:inherit; letter-spacing:2px; }
+      .bininput:focus { outline:none; border-color:#6366F1; }
+      .bininput::placeholder { color:#5B6478; letter-spacing:normal; }
+      .binresult { font-size:9px; color:#B7C0D4; margin-top:5px; line-height:1.5; min-height:0; }
+      .binresult:empty { margin-top:0; }
+      .binresult.ok { color:#34D399; }
+      .binresult b { color:#E8ECF4; }
       @media (prefers-reduced-motion: reduce) { .box { animation: none !important; } }
     </style>
     <div class="box">
@@ -1008,6 +1034,7 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
       <div class="cwlist" data-list="owned">${ownedHtml}</div>
       <div class="cwlist" data-list="all" hidden>${upgradeHtml}${allHtml}</div>
       ${otherOffersHtml}
+      ${binHtml}
       ${affHtml}
       <div class="ft">${T('cw_ft_approx')}<br>${T('cw_ft_readonly')}</div>
     </div>
@@ -1037,6 +1064,31 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
   installDragListeners();
   const buyBtn = shadow.querySelector('.buy');
   if (buyBtn) buyBtn.addEventListener('click', () => window.open(buyBtn.dataset.url, '_blank', 'noopener'));
+
+  // ── BIN-check: user 6 digit daale → bank/network → us bank ka page-offer dikhao ──
+  // NOTE: kuch store NAHI, kabhi log NAHI (sirf memory me 6 digit). Full number kabhi nahi.
+  const binInput = shadow.querySelector('.bininput');
+  if (binInput) {
+    const binResult = shadow.querySelector('.binresult');
+    const cleanOffer = (t) => String(t || '').replace(/apply/gi, ' · ').replace(/\s+/g, ' ').trim().slice(0, 120);
+    binInput.addEventListener('input', () => {
+      const digits = binInput.value.replace(/\D/g, '').slice(0, 6);
+      if (binInput.value !== digits) binInput.value = digits;
+      binResult.className = 'binresult';
+      if (digits.length < 6) { binResult.textContent = ''; return; }
+      const api = window.CardWizOffers;
+      const info = (api && api.binToBank) ? api.binToBank(digits) : { bank: null, network: null };
+      const net = info.network ? ' · ' + escapeHtml(info.network) : '';
+      if (info.bank && pageOffers[info.bank]) {
+        binResult.className = 'binresult ok';
+        binResult.innerHTML = `✅ <b>${escapeHtml(info.bank)}${net}</b><br>${escapeHtml(cleanOffer(pageOffers[info.bank]))}`;
+      } else if (info.bank) {
+        binResult.innerHTML = `<b>${escapeHtml(info.bank)}${net}</b> — ${escapeHtml(T('cw_bin_nooffer'))}`;
+      } else {
+        binResult.innerHTML = (info.network ? `<b>${escapeHtml(info.network)}</b> — ` : '') + escapeHtml(T('cw_bin_unknown'));
+      }
+    });
+  }
 
   // Tab switch: Your cards <-> All cards
   const tabs = shadow.querySelectorAll('.tab');

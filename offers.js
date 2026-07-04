@@ -124,8 +124,43 @@ function bestOffersByBank(texts, amount) {
   return byBank;
 }
 
+// ---------- BIN → bank/network (sirf pehle 6 digit — full card number KABHI nahi) ----------
+// Offer eligibility bank + network se decide hoti hai; ye BIN (Bank Identification Number) me
+// aa jaati hai. Ye map curated hai (major cards); unknown BIN pe bank=null, network fir bhi milta.
+// canonical bank naam data/cards.json ke `bank` se match — taaki offer se match ho sake.
+const BIN_MAP = {
+  '431581': 'ICICI', // Amazon Pay ICICI Credit Card
+  '437551': 'ICICI', // ICICI Coral Credit Card
+  '434155': 'HDFC',  // HDFC (test)
+  // TODO(expand): aur banks/products ke BIN prefixes yahan add karo (6→4 digit prefix chalega).
+};
+
+// Card network pehle digit/prefix se (universal, reliable).
+function cardNetwork(bin) {
+  const b = String(bin || '').replace(/\D/g, '');
+  if (!b) return null;
+  if (/^4/.test(b)) return 'Visa';
+  if (/^(5[1-5]|2[2-7])/.test(b)) return 'Mastercard';
+  if (/^(60|65|81|82|508)/.test(b)) return 'RuPay';
+  if (/^3[47]/.test(b)) return 'Amex';
+  if (/^3[0689]/.test(b)) return 'Diners';
+  return null;
+}
+
+// BIN (>=6 digit) -> { bank, network }. bank null ho sakta hai (map me nahi), network mostly milega.
+function binToBank(bin) {
+  const b = String(bin || '').replace(/\D/g, '').slice(0, 6);
+  const network = cardNetwork(b);
+  if (b.length < 6) return { bank: null, network };
+  for (let len = 6; len >= 4; len--) {            // exact 6, phir ghatate hue prefix
+    const bank = BIN_MAP[b.slice(0, len)];
+    if (bank) return { bank, network };
+  }
+  return { bank: null, network };
+}
+
 // ---------- Exports (browser/worker/node) ----------
 // unique const naam — classic scripts shared global scope mein collide na ho.
-const offersApi = { detectBank, parseOffer, offerValue, bestOffersByBank };
+const offersApi = { detectBank, parseOffer, offerValue, bestOffersByBank, cardNetwork, binToBank, BIN_MAP };
 if (typeof module !== 'undefined' && module.exports) module.exports = offersApi;
 if (typeof globalThis !== 'undefined') globalThis.CardWizOffers = offersApi;
