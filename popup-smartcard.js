@@ -812,11 +812,11 @@ function hasAnyTrackerData(cat) {
   if (!cat) return false;
   if (cat.feeWaiverSpend > 0 && cat.annualFee > 0) return true;
   if (cat.welcomeBonus) return true;
+  if (cat.fuelSurchargeWaiver) return true; // top-level fuel waiver (e.g. Amazon Pay — no benefits object)
   if (cat.benefits && (
     (cat.benefits.loungePerYear !== 0 && cat.benefits.loungePerYear !== undefined) ||
     cat.benefits.moviePerMonth > 0 ||
-    cat.benefits.fuelSurchargeWaiver ||
-    cat.fuelSurchargeWaiver
+    cat.benefits.fuelSurchargeWaiver
   )) return true;
   return false;
 }
@@ -920,8 +920,8 @@ function makeCardDetail(mc, cat) {
   }
 
   // ── Benefits Dashboard ──
-  if (cat.benefits) {
-    const b = cat.benefits;
+  if (cat.benefits || cat.fuelSurchargeWaiver) {
+    const b = cat.benefits || {};
     const hasLounge = b.loungePerYear !== 0 && b.loungePerYear !== undefined;
     const hasMovie = b.moviePerMonth > 0;
     const hasFuel = b.fuelSurchargeWaiver || cat.fuelSurchargeWaiver;
