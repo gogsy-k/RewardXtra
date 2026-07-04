@@ -194,7 +194,10 @@ function findCardTitleNodes(D) {
     const t = (n.textContent || '').replace(/\s+/g, ' ').trim();
     if (t.length < 10 || t.length > 150) continue;
     // "ending in 3003" (Amazon) ya "• 3003" (Flipkart) ya "xx3003" — koi bhi last4 marker.
-    if (!/(?:ending\s+(?:in|with)\s*|[•·*]{1,4}\s*|\bx{2,4}\s*)\d{2,4}(?!\d)/i.test(t)) continue;
+    // EXACTLY EK marker — do titles wala combined container ("…•3003…axis…•1219") title
+    // NAHI hai; usse padosi card ke tokens ctx me ghus jaate the (phantom match).
+    const markers = t.match(/(?:ending\s+(?:in|with)\s*|[•·*]{1,4}\s*|\bx{2,4}\s*)\d{2,4}(?!\d)/gi);
+    if (!markers || markers.length !== 1) continue;
     if (!BANK_NAME_RE.test(t)) continue;
     titles.push({ node: n, text: t.toLowerCase() });
   }
@@ -342,8 +345,14 @@ function matchCardOffer(cardName, cardBank, last4List, cardOffers, claimed) {
   if (!tokens.length) return 0; // koi distinctive token nahi -> safe: no offer (over-credit se bacho)
   // Naam-token match pe bhi bank verify karo.
   const matches = cardOffers.filter((o) => tokens.every((t) => o.ctx.includes(t)) && bankMatchesCtx(cardBank, o.ctx));
-  if (matches.length && claimed) matches.forEach((m2) => claimed.add(m2));
-  return matches.length ? Math.min(...matches.map((o) => o.amt)) : 0;
+  if (matches.length) {
+    if (claimed) matches.forEach((m2) => claimed.add(m2));
+    // Ye path bhi LOG kare — silent match ne hi pichhla phantom-5500 chhupaya tha.
+    dbg('offer matched via name+bank (' + cardBank + '):', cardName, '→ ₹' + Math.min(...matches.map((o) => o.amt)),
+      '| ctx:', matches[0].ctx.slice(0, 60));
+    return Math.min(...matches.map((o) => o.amt));
+  }
+  return 0;
 }
 
 function readOffersFromDOM() {
@@ -402,7 +411,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v5'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v6'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
