@@ -44,6 +44,28 @@ function detectSite(hostname) {
   return null;
 }
 
+// Har merchant ka canonical storefront (affiliate landing ke liye).
+const MERCHANT_HOME = {
+  Amazon: 'https://www.amazon.in', Flipkart: 'https://www.flipkart.com',
+  Myntra: 'https://www.myntra.com', Ajio: 'https://www.ajio.com',
+  Nykaa: 'https://www.nykaa.com', Meesho: 'https://www.meesho.com',
+  'Tata CLiQ': 'https://www.tatacliq.com', Swiggy: 'https://www.swiggy.com',
+  Zomato: 'https://www.zomato.com', BigBasket: 'https://www.bigbasket.com',
+  Blinkit: 'https://www.blinkit.com', Zepto: 'https://www.zeptonow.com',
+  MakeMyTrip: 'https://www.makemytrip.com', Cleartrip: 'https://www.cleartrip.com',
+  IRCTC: 'https://www.irctc.co.in', BookMyShow: 'https://in.bookmyshow.com',
+};
+
+// Affiliate "Buy via our link" ke liye shoppable landing URL.
+//  - Amazon: current page (tag har amazon.in page pe valid).
+//  - Baaki (INRDeals): merchant HOMEPAGE — widget hamesha cart/checkout/payment page pe dikhta
+//    hai, jahan current URL login-gated/gateway hoti hai. Payment subdomain (jaise
+//    payment.services.ajio.com/pay) wrap karne pe INRDeals 403 deta tha. Homepage = valid + attributed.
+function affiliateLandingUrl(site) {
+  if (site.category === 'amazon') return location.href;
+  return MERCHANT_HOME[site.merchant] || (location.origin || location.href);
+}
+
 // Sirf cart/checkout/payment jaise pages pe widget dikhao — har page pe nahi.
 function isCheckoutish(pathAndSearch, host) {
   const u = (pathAndSearch || '').toLowerCase();
@@ -460,7 +482,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v19'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v20'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -903,7 +925,7 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
 
   // Phase 6: affiliate "Buy via our link" (no extra cost) + disclosure.
   const aff = window.CardWizAffiliate
-    ? window.CardWizAffiliate.affiliateUrl(site.category, location.href)
+    ? window.CardWizAffiliate.affiliateUrl(site.category, affiliateLandingUrl(site))
     : { affiliated: false };
   const affHtml = aff.affiliated
     ? `<button class="buy" data-url="${escapeHtml(aff.url)}">${T('cw_buy_link')}</button>
