@@ -180,7 +180,9 @@ function readPaymentPageOffers() {
 // Har card-row ka apna instant-offer (card-specific), us row ke text (ctx) ke saath —
 // taaki offer sahi card se match ho (bank ke sabhi cards pe nahi). Amazon checkout:
 // "Amazon Pay ICICI ... ₹3500 off with this card" vs "ICICI ... ₹7500 off".
-const OFFER_PHRASE_RE = /(?:₹|rs\.?|inr)?\s*([\d,]+(?:\.\d{1,2})?)\s*off\s+(?:with\s+this\s+card|on\s+full\s+payment)/i;
+// Amazon: "3500.00 off with this card / off on full payment"
+// Flipkart: "₹5,500 discount applied. / discount applicable."
+const OFFER_PHRASE_RE = /(?:₹|rs\.?|inr)?\s*([\d,]+(?:\.\d{1,2})?)\s*(?:off\s+(?:with\s+this\s+card|on\s+full\s+payment)|discount\s+(?:applied|applicable))/i;
 
 // Card-title nodes: "Amazon Pay ICICI Bank Credit Card ending in 3012" jaise chhote
 // header elements (bank naam + "ending in NNNN"). Offer inhi se attribute hota hai.
@@ -191,7 +193,8 @@ function findCardTitleNodes(D) {
     if (n.children.length > 5) continue;
     const t = (n.textContent || '').replace(/\s+/g, ' ').trim();
     if (t.length < 10 || t.length > 150) continue;
-    if (!/ending in\s*\d{2,4}/i.test(t)) continue;
+    // "ending in 3003" (Amazon) ya "• 3003" (Flipkart) ya "xx3003" — koi bhi last4 marker.
+    if (!/(?:ending\s+(?:in|with)\s*|[•·*]{1,4}\s*|\bx{2,4}\s*)\d{2,4}\b/i.test(t)) continue;
     if (!BANK_NAME_RE.test(t)) continue;
     titles.push({ node: n, text: t.toLowerCase() });
   }
@@ -281,13 +284,20 @@ const OFFER_GENERIC_WORDS = new Set([
 //      (generic rows jaise "ICICI Bank Credit Card ending in 3003" isi se attribute hote hain).
 //   2) naam ke distinctive tokens (e.g. "amazon pay").
 // No confident match -> 0 (kabhi over-credit nahi).
-// ctx me se "ending in/with NNNN" ke saare digits nikaalo.
+// ctx me se card ke last4 digits nikaalo — har site ka format alag:
+//   Amazon: "ending in 3003" · Flipkart: "credit card • 3003" · aur: "xx3003", "**3003"
 function ctxLast4s(ctx) {
   const out = [];
-  const re = /ending\s+(?:in|with)\s*(\d{2,4})/g;
-  let m;
-  while ((m = re.exec(ctx))) out.push(m[1]);
-  return out;
+  const patterns = [
+    /ending\s+(?:in|with)\s*(\d{2,4})\b/g,
+    /[•·*]{1,4}\s*(\d{2,4})\b/g,
+    /\bx{2,4}\s*(\d{2,4})\b/gi,
+  ];
+  for (const re of patterns) {
+    let m;
+    while ((m = re.exec(ctx))) out.push(m[1]);
+  }
+  return [...new Set(out)];
 }
 
 // Kya offer-ctx me card ka BANK likha hai? (last4 galti se kisi aur bank ke card pe
