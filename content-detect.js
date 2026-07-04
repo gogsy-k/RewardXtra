@@ -437,7 +437,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v13'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v14'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -506,12 +506,19 @@ function selectedCardInfo() {
   const titles = findCardTitleNodes(document);
   for (const { node, text } of titles) {
     if (distinctBanks(text).size !== 1 || !ctxLast4s(text).length) continue;
+    const myL4 = ctxLast4s(text)[0] || '';
     let el = node;
     for (let i = 0; i < 8 && el.parentElement; i++) {
       el = el.parentElement;
-      if ((el.textContent || '').length > 700) break;              // itna bada = poori list, ruk jao
+      const ct = el.textContent || '';
+      if (ct.length > 700) break;                                  // itna bada = poori list, ruk jao
+      // Container SIRF isi card ka hona chahiye. 2+ banks ya 2+ last4 = shared wrapper (dusra
+      // card bhi ismein) — iska "selected" signal is title ka proof nahi. (ICICI selected hone
+      // par shared container ka "Pay ₹" button Flipkart Axis pe galat match kar raha tha →
+      // uska offer ₹2000 se ₹3000 ho jata tha.)
+      if (distinctBanks(ct).size > 1 || new Set(ctxLast4s(ct)).size > 1) break;
       if (isSelectedContainer(el)) {
-        return { ctx: text, bank: (text.match(BANK_NAME_RE) || [])[0] || '', last4: ctxLast4s(text)[0] || '' };
+        return { ctx: text, bank: (text.match(BANK_NAME_RE) || [])[0] || '', last4: myL4 };
       }
     }
   }
