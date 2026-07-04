@@ -138,7 +138,7 @@ function genericAmount() {
 const OFFER_HINT = /(instant discount|bank offer|no cost emi|cashback|%\s*off|flat\s*₹|credit card|debit card|₹\s*[\d,]+(?:\.\d+)?\s*off)/i;
 const OFFER_VALUE_HINT = /(credit card|debit card|emi|instant|cashback|%|₹\s*\d)/i;
 
-const BANK_NAME_RE = /(hdfc|icici|sbi|axis|kotak|amex|american express|indusind|yes bank|rbl|idfc|federal|standard chartered|hsbc|au bank|bob|bank of baroda|citibank|onecard)/i;
+const BANK_NAME_RE = /(hdfc|icici|sbi|axis|kotak|amex|american express|indusind|yes bank|rbl|idfc|federal|standard chartered|hsbc|au bank|bob|bank of baroda|citi|onecard)/i;
 
 // Sirf "X off on full payment" wala instant-discount pattern (screenshot wala).
 // "select products" coupons / EMI / concatenated garbage ko ignore karta hai —
@@ -180,18 +180,21 @@ function readPaymentPageOffers() {
 // Har card-row ka apna instant-offer (card-specific), us row ke text (ctx) ke saath —
 // taaki offer sahi card se match ho (bank ke sabhi cards pe nahi). Amazon checkout:
 // "Amazon Pay ICICI ... ₹3500 off with this card" vs "ICICI ... ₹7500 off".
-function readPaymentCardOffers() {
+const OFFER_PHRASE_RE = /(?:₹|rs\.?|inr)?\s*([\d,]+(?:\.\d{1,2})?)\s*off\s+(?:with\s+this\s+card|on\s+full\s+payment)/i;
+
+function readPaymentCardOffers(doc) {
+  const D = doc || document;
   const out = [];
-  const leaves = document.querySelectorAll('div, li, p, span, td, b, strong');
+  let phraseSeen = 0, noCtx = 0;
+  const leaves = D.querySelectorAll('div, li, p, span, td, b, strong');
   for (const node of leaves) {
     if (node.children.length > 3) continue;
     const own = (node.textContent || '').replace(/\s+/g, ' ').trim();
     if (own.length < 6 || own.length > 220) continue;
-    // ₹ OPTIONAL (Amazon symbol ko alag element me rakhta hai — leaf text me sirf
-    // "3500.00 off with this card" aata hai). Strong phrase required, taaki "10% off"
-    // jaise generic coupons match na hon.
-    const m = own.match(/(?:₹|rs\.?|inr)?\s*([\d,]+(?:\.\d{1,2})?)\s*off\s+(?:with\s+this\s+card|on\s+full\s+payment)/i);
+    // ₹ OPTIONAL (Amazon symbol ko alag element me rakhta hai). Strong phrase required.
+    const m = own.match(OFFER_PHRASE_RE);
     if (!m) continue;
+    phraseSeen++;
     const amt = parseFloat(m[1].replace(/,/g, ''));
     if (!amt || amt <= 0 || amt > 100000) continue;
     // Card-row container dhoondo (jisme card ka naam ho).
@@ -202,7 +205,30 @@ function readPaymentCardOffers() {
       if (BANK_NAME_RE.test(at) && at.length < 600) { ctx = at.toLowerCase(); break; }
     }
     if (ctx) out.push({ amt, ctx });
+    else { noCtx++; dbg('offer text mila par card-row (bank) context NAHI:', own.slice(0, 90)); }
   }
+  // Sirf tab log jab kuch mila/miss hua — pure silence se bhi pata chalta hai (0 leaves matched).
+  if (phraseSeen || out.length) dbg(`scan: ${leaves.length} nodes | phrase-match: ${phraseSeen} | ctx-ok: ${out.length} | ctx-miss: ${noCtx}`);
+  return out;
+}
+
+// Top frame se: page ke saare SAME-ORIGIN-accessible iframes ka DOM seedha scan karo
+// (srcdoc/same-origin frames — injection ki zaroorat nahi). Cross-origin frames apna
+// scan khud postMessage se bhejte hain (frame mode).
+function readAllFramesCardOffers() {
+  let out = readPaymentCardOffers(document);
+  const iframes = document.querySelectorAll('iframe');
+  let accessible = 0;
+  for (const f of iframes) {
+    try {
+      const d = f.contentDocument;
+      if (d && d.body) {
+        accessible++;
+        out = out.concat(readPaymentCardOffers(d));
+      }
+    } catch (_) { /* cross-origin — postMessage path handle karega */ }
+  }
+  dbg(`iframes: ${iframes.length} total, ${accessible} directly-accessible | total card-offers: ${out.length}`);
   return out;
 }
 
@@ -311,7 +337,7 @@ async function evaluateAndRender() {
   // Har card ka apna instant offer: is frame se + payment-iframe se aaye hue (Amazon ka
   // naya checkout card list ko apx secure IFRAME me rakhta hai — wahan ka scan
   // postMessage se frameOffers me aata hai).
-  const cardOffers = readPaymentCardOffers().concat(frameOffers);
+  const cardOffers = readAllFramesCardOffers().concat(frameOffers);
   dbg('site:', site.merchant, '| amount:', amount, '| owned:', owned.length, '| premium:', isPremium);
   dbg('page card-offers:', cardOffers.map((o) => `₹${o.amt} @ "${o.ctx.slice(0, 70)}…"`));
   let ownedRanked = [];
@@ -548,11 +574,16 @@ function escapeHtml(s) {
 // ---------- Init + SPA navigation handling ----------
 
 function init() {
+  // Har frame me load-proof — isse pata chalta hai script payment iframe me inject
+  // hua ya nahi (sabse pehla debugging clue).
+  dbg('loaded in', window.top === window ? 'TOP frame' : 'CHILD frame', '|', String(location.href).slice(0, 110));
+
   // ── FRAME MODE ── Amazon ka naya checkout payment-cards ko secure iframe (apx) me
   // rakhta hai. Frames me widget NAHI banate — sirf card-offers scan karke top frame
   // ko postMessage bhejte hain.
   if (window.top !== window) {
-    if (!detectSite(location.hostname)) return; // sirf merchant frames
+    // NOTE: yahan detectSite check NAHI — srcdoc/blob frames ka hostname empty/alag ho
+    // sakta hai; manifest match ne already yeh merchant tab hi limit kar diya hai.
     let sent = '';
     const scanAndSend = () => {
       const offers = readPaymentCardOffers();
@@ -560,6 +591,7 @@ function init() {
       const key = JSON.stringify(offers);
       if (key === sent) return; // same data dobara mat bhejo
       sent = key;
+      dbg('FRAME → TOP bhej raha:', offers.length, 'offers');
       try { window.top.postMessage({ type: 'cardwiz-card-offers', offers }, '*'); } catch (_) { /* noop */ }
     };
     let ft = 0;
@@ -580,8 +612,10 @@ function init() {
     const d = e.data;
     if (!d || d.type !== 'cardwiz-card-offers' || !Array.isArray(d.offers)) return;
     let fromMerchant = false;
-    try { fromMerchant = !!detectSite(new URL(e.origin).hostname); } catch (_) { /* ignore */ }
-    if (!fromMerchant) return; // sirf hamare merchant domains ke frames
+    if (e.origin === 'null') fromMerchant = true; // sandboxed/srcdoc secure frame (origin "null")
+    else try { fromMerchant = !!detectSite(new URL(e.origin).hostname); } catch (_) { /* ignore */ }
+    if (!fromMerchant) { dbg('frame-message reject (origin):', e.origin); return; }
+    dbg('TOP ← FRAME message:', d.offers.length, 'offers | origin:', e.origin);
     const clean = d.offers
       .filter((o) => o && typeof o.amt === 'number' && o.amt > 0 && o.amt <= 100000 && typeof o.ctx === 'string')
       .map((o) => ({ amt: o.amt, ctx: String(o.ctx).slice(0, 600).toLowerCase() }))
