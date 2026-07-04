@@ -482,7 +482,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v20'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v21'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -929,7 +929,7 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
     : { affiliated: false };
   const affHtml = aff.affiliated
     ? `<button class="buy" data-url="${escapeHtml(aff.url)}">${T('cw_buy_link')}</button>
-       <div class="disc">${T('cw_disclosure')} <b>${T('cw_donate')}</b></div>`
+       <div class="disc">${T('cw_disc_pre')} <b>${T('cw_donate')}</b> ${T('cw_disc_post')}</div>`
     : '';
 
   shadow.innerHTML = `
