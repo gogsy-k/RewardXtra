@@ -457,7 +457,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v16'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v17'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -723,18 +723,31 @@ let cwDragState = null;
 let cwDragInstalled = false;
 
 // Widget ko viewport ke andar clamp karke left/top pe rakho (bottom/right hatao).
+// AHM: PURA widget andar rahe — clamp actual width/height se (pehle fixed -120 tha, isliye
+// ~300px chaude widget ka ~180px right edge se bahar nikal jaata tha).
 function applyWidgetPos(host, x, y) {
-  const cx = Math.max(4, Math.min(x, window.innerWidth - 120));
-  const cy = Math.max(4, Math.min(y, window.innerHeight - 60));
+  const rect = host.getBoundingClientRect();
+  const w = rect.width || 300;
+  const h = rect.height || 200;
+  const cx = Math.max(4, Math.min(x, window.innerWidth - w - 4));
+  const cy = Math.max(4, Math.min(y, window.innerHeight - h - 4));
   host.style.left = cx + 'px';
   host.style.top = cy + 'px';
   host.style.right = 'auto';
   host.style.bottom = 'auto';
 }
 
+// Window resize/zoom pe widget ko wapas viewport ke andar khींch lo (kabhi off-screen na ho).
+function clampWidgetIntoView() {
+  const host = document.getElementById(WIDGET_HOST_ID);
+  if (!host || host.style.left === '' || host.style.left === 'auto') return; // default bottom-right = already safe
+  applyWidgetPos(host, parseFloat(host.style.left) || 0, parseFloat(host.style.top) || 0);
+}
+
 function installDragListeners() {
   if (cwDragInstalled) return;
   cwDragInstalled = true;
+  window.addEventListener('resize', clampWidgetIntoView, true); // resize/zoom pe andar rakho
   document.addEventListener('mousemove', (e) => {
     if (!cwDragState) return;
     const host = document.getElementById(WIDGET_HOST_ID);
@@ -980,6 +993,9 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
   if (up) up.addEventListener('click', () => window.open('https://cardwiz.in/pricing', '_blank', 'noopener'));
 
   document.body.appendChild(host);
+  // Ab host DOM me hai → asli width/height available. Saved position ko sahi dims ke saath
+  // dobara clamp karo (warna off-screen saved pos andar nahi aata tha).
+  if (savedPos && typeof savedPos.x === 'number') applyWidgetPos(host, savedPos.x, savedPos.y);
 }
 
 function escapeHtml(s) {
