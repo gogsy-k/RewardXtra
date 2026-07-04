@@ -78,7 +78,9 @@ const AMOUNT_SELECTORS = {
   Myntra: [
     '.priceDetail-base-grandTotal',
     '.priceDetail-base-totalAmount',
-    '.pdp-price strong',
+    // NOTE: '.pdp-price strong' HATAYA — wo product ka STRUCK MRP (₹3,995) grab kar raha
+    // tha; bank offer to payable "Total Amount" (₹1,422) pe lagta hai. genericAmount ab
+    // payable label ke paas se sahi amount le lega.
   ],
   // Naye sites — class names obfuscated/badalte rehte hain, isliye mostly
   // genericAmount() (TOTAL_LABELS) fallback pe rely karte hain. Ye best-guess hints hain.
@@ -98,6 +100,9 @@ const AMOUNT_SELECTORS = {
 };
 
 const TOTAL_LABELS = /(grand total|order total|amount payable|total payable|total amount|net payable|to pay|bill total|item total|amount to pay|payable amount|you pay|total payable amount|total fare|final amount)/i;
+// FINAL payable (transaction amount) — bank offer INHI pe lagta hai, MRP/subtotal pe nahi.
+// "item total / total mrp / subtotal" jaan-boojh ke chhode (wo pre-discount hote hain).
+const PAYABLE_LABELS = /(grand total|total amount|amount payable|payable amount|net payable|net amount|total payable(?:\s+amount)?|amount to pay|\bto pay\b|you pay|final amount|order total|total collectible(?:\s+amount)?|total fare)/i;
 
 // ---------- DOM-dependent (browser only) ----------
 
@@ -115,22 +120,37 @@ function detectAmount(merchant) {
   return genericAmount();
 }
 
-// Fallback: "Grand Total / Amount Payable" jaise label ke paas ka ₹ amount dhoondo.
+// Label ke paas ka amount — HAMESHA label ke aas-paas se (parent-blob ka pehla ₹ nahi).
+// "Total Amount ₹1,422" -> 1422. Agar value alag cell/sibling me ho to wahan se.
+function amountForLabel(node, labelRe) {
+  const txt = (node.textContent || '').replace(/\s+/g, ' ').trim();
+  let v = amtAfterLabel(txt, labelRe);                                    // same node: label ke baad
+  if (v) return v;
+  v = amtNear(node.nextElementSibling && node.nextElementSibling.textContent); // value alag cell me
+  if (v) return v;
+  if (node.parentElement && (node.parentElement.textContent || '').length < 200)
+    v = amtAfterLabel(node.parentElement.textContent, labelRe);           // chhota parent-row: label ke baad
+  return v || 0;
+}
+
+// Fallback: payable ("Total Amount / Grand Total / Amount Payable") ka amount dhoondo.
+// AHM: ₹ HAMESHA label ke paas se — "Total MRP ₹3,995" jaisa pre-discount pehla ₹ NAHI.
+// Bank offer payable pe lagta hai (Myntra: MRP ₹3,995 par payable ₹1,422).
 function genericAmount() {
-  const nodes = document.querySelectorAll('span, div, td, p, strong, b');
-  let best = null;
+  const nodes = document.querySelectorAll('span, div, td, p, strong, b, li, dt, dd, tr');
+  let payable = 0, payableSeen = false, anyTotal = 0;
   for (const node of nodes) {
-    const txt = node.textContent || '';
-    if (txt.length > 120) continue;          // bade blocks skip
-    if (!TOTAL_LABELS.test(txt)) continue;
-    // is element ya uske parent/siblings mein ₹ amount dhoondo
-    const candidate =
-      parseRupee(txt) ||
-      parseRupee(node.parentElement && node.parentElement.textContent) ||
-      parseRupee(node.nextElementSibling && node.nextElementSibling.textContent);
-    if (candidate && (!best || candidate > best)) best = candidate; // sabse bada = grand total
+    const txt = (node.textContent || '').replace(/\s+/g, ' ').trim();
+    if (txt.length > 120) continue;               // bade blocks skip (multi-₹ blob)
+    if (PAYABLE_LABELS.test(txt)) {
+      const v = amountForLabel(node, PAYABLE_LABELS);
+      if (v) { payable = v; payableSeen = true; }  // baad wala (page me neeche = final) jeetega
+    } else if (TOTAL_LABELS.test(txt)) {
+      const v = amountForLabel(node, TOTAL_LABELS);
+      if (v && v > anyTotal) anyTotal = v;         // payable-label na mile to hi ye best-guess
+    }
   }
-  return best;
+  return payableSeen ? payable : (anyTotal || null);
 }
 
 // Checkout page pe dikhne wale bank-offer / No-Cost-EMI text padho (READ-ONLY).
@@ -437,7 +457,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v15'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v16'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
