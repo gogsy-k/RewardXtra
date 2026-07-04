@@ -78,6 +78,11 @@ async function init() {
   await loadSyncPref(); // Phase 10: cloud sync pref (default ON)
   if (currentUser && syncEnabled) await doSyncNow(); // pull+merge+push cards
   if (currentUser && !isPremium) await autoVerifyPayment(); // Phase 11: pending payment auto-detect
+  if (typeof CardWizDebug !== 'undefined') {
+    const withL4 = myCards.filter((c) => String(c.last4 || '').replace(/\D/g, '').length === 4).length;
+    CardWizDebug.cwlog('popup', 'boot | cards:', myCards.length, '| with-last4:', withL4,
+      '| premium:', isPremium, '| user:', currentUser ? currentUser.email : 'signed-out', '| lang:', CardWizI18n.getLang());
+  }
   renderMyCards();
   renderBestCards(); // Tab 1: curated "best cards in market"
   renderFeatured(); // Sponsored card — free users only
