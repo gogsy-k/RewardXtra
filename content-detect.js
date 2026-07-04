@@ -411,7 +411,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v7'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v8'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -433,11 +433,9 @@ async function evaluateAndRender() {
     dbgSkip('skip: URL checkout-jaisa nahi — ' + location.pathname);
     return;
   }
-  // User ne is page pe widget close kiya tha? to mat dikhao.
-  if (sessionStorage.getItem('scs-dismissed') === location.pathname) {
-    dbgSkip('skip: is path pe ✕ se dismiss kiya tha (is tab-session ke liye) — undo: sessionStorage.removeItem("scs-dismissed") — ' + location.pathname);
-    return;
-  }
+  // Purana per-path dismiss system hata diya (widget wapas laane ka UI hi nahi tha —
+  // "extension aa hi nahi raha" confusion). Ab ✕ = minimize-to-chip (neeche dekho).
+  try { sessionStorage.removeItem('scs-dismissed'); } catch (_) { /* noop */ }
   lastSkipMsg = '';
 
   const DB = await window.CardWizCatalog.load();
@@ -566,7 +564,33 @@ function installDragListeners() {
   }, true);
 }
 
+// Minimized chip — ✕ dabane pe widget gayab nahi hota, is chhote 💳 button me simat
+// jaata hai. Click => widget wapas. (Tab-session me yaad rehta hai.)
+function renderMinChip() {
+  removeWidget();
+  const host = document.createElement('div');
+  host.id = WIDGET_HOST_ID;
+  host.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:2147483647;';
+  const shadow = host.attachShadow({ mode: 'open' });
+  shadow.innerHTML = `
+    <style>
+      :host { all: initial; }
+      .chip { width:46px; height:46px; border-radius:50%; background:#0C1018; color:#E8ECF4;
+              border:1px solid #2A3450; box-shadow:0 6px 20px rgba(0,0,0,.4); cursor:pointer;
+              display:flex; align-items:center; justify-content:center; font-size:20px; }
+      .chip:hover { border-color:#6366F1; }
+    </style>
+    <button class="chip" title="CardWiz kholo">💳</button>`;
+  shadow.querySelector('.chip').addEventListener('click', () => {
+    try { sessionStorage.removeItem('cw-min'); } catch (_) { /* noop */ }
+    lastSignature = null;
+    evaluateAndRender().catch(() => {});
+  });
+  document.body.appendChild(host);
+}
+
 function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned, isPremium) {
+  if (sessionStorage.getItem('cw-min') === '1') { renderMinChip(); return; }
   removeWidget();
 
   const host = document.createElement('div');
@@ -727,8 +751,8 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
   `;
 
   shadow.querySelector('.x').addEventListener('click', () => {
-    sessionStorage.setItem('scs-dismissed', location.pathname);
-    removeWidget();
+    try { sessionStorage.setItem('cw-min', '1'); } catch (_) { /* noop */ }
+    renderMinChip(); // gayab nahi — chip me minimize
   });
 
   // ── Drag: header pakad ke widget kahin bhi move karo (peeche ke buttons ke liye
