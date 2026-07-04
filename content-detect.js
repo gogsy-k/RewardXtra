@@ -506,6 +506,40 @@ function removeWidget() {
   if (host) host.remove();
 }
 
+// ── Widget dragging (module-level: listeners EK hi baar lagte hain, har render pe nahi) ──
+let cwDragState = null;
+let cwDragInstalled = false;
+
+// Widget ko viewport ke andar clamp karke left/top pe rakho (bottom/right hatao).
+function applyWidgetPos(host, x, y) {
+  const cx = Math.max(4, Math.min(x, window.innerWidth - 120));
+  const cy = Math.max(4, Math.min(y, window.innerHeight - 60));
+  host.style.left = cx + 'px';
+  host.style.top = cy + 'px';
+  host.style.right = 'auto';
+  host.style.bottom = 'auto';
+}
+
+function installDragListeners() {
+  if (cwDragInstalled) return;
+  cwDragInstalled = true;
+  document.addEventListener('mousemove', (e) => {
+    if (!cwDragState) return;
+    const host = document.getElementById(WIDGET_HOST_ID);
+    if (!host) { cwDragState = null; return; }
+    applyWidgetPos(host, e.clientX - cwDragState.dx, e.clientY - cwDragState.dy);
+  }, true);
+  document.addEventListener('mouseup', () => {
+    if (!cwDragState) return;
+    cwDragState = null;
+    const host = document.getElementById(WIDGET_HOST_ID);
+    if (host) {
+      const rect = host.getBoundingClientRect();
+      try { sessionStorage.setItem('cw-widget-pos', JSON.stringify({ x: rect.left, y: rect.top })); } catch (_) { /* noop */ }
+    }
+  }, true);
+}
+
 function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned, isPremium) {
   removeWidget();
 
@@ -670,6 +704,24 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
     sessionStorage.setItem('scs-dismissed', location.pathname);
     removeWidget();
   });
+
+  // ── Drag: header pakad ke widget kahin bhi move karo (peeche ke buttons ke liye
+  // jagah banane ke liye). Position is tab-session me yaad rehti hai — re-render pe bhi.
+  const hd = shadow.querySelector('.hd');
+  hd.style.cursor = 'grab';
+  hd.title = '↔ Drag karke move karo';
+  const savedPos = (() => {
+    try { return JSON.parse(sessionStorage.getItem('cw-widget-pos') || 'null'); } catch (_) { return null; }
+  })();
+  if (savedPos && typeof savedPos.x === 'number') applyWidgetPos(host, savedPos.x, savedPos.y);
+  hd.addEventListener('mousedown', (e) => {
+    if (e.target && e.target.classList && e.target.classList.contains('x')) return; // close button
+    const rect = host.getBoundingClientRect();
+    cwDragState = { dx: e.clientX - rect.left, dy: e.clientY - rect.top };
+    hd.style.cursor = 'grabbing';
+    e.preventDefault();
+  });
+  installDragListeners();
   const buyBtn = shadow.querySelector('.buy');
   if (buyBtn) buyBtn.addEventListener('click', () => window.open(buyBtn.dataset.url, '_blank', 'noopener'));
 
