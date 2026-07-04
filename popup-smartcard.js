@@ -1008,7 +1008,7 @@ function openCardDetailModal(mc, cat) {
   // ── Header: cohesive dark strip (website palette) with a subtle bank-colored badge ──
   const hd = document.createElement('div');
   hd.className = 'cd-card-hd';
-  const accent = bankColor(cat.bank);
+  const accent = bankAccentColor(cat.bank);
 
   const emojiEl = document.createElement('span');
   emojiEl.className = 'cd-emoji';
