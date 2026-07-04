@@ -177,6 +177,50 @@ function readPaymentPageOffers() {
   return [...new Set(offers)];
 }
 
+// Har card-row ka apna instant-offer (card-specific), us row ke text (ctx) ke saath —
+// taaki offer sahi card se match ho (bank ke sabhi cards pe nahi). Amazon checkout:
+// "Amazon Pay ICICI ... ₹3500 off with this card" vs "ICICI ... ₹7500 off".
+function readPaymentCardOffers() {
+  const out = [];
+  const leaves = document.querySelectorAll('div, li, p, span, td, b, strong');
+  for (const node of leaves) {
+    if (node.children.length > 3) continue;
+    const own = (node.textContent || '').replace(/\s+/g, ' ').trim();
+    if (own.length < 6 || own.length > 220) continue;
+    const m = own.match(/(?:₹|rs\.?|inr)\s*([\d,]+(?:\.\d+)?)\s*(?:off|discount)\b/i);
+    if (!m) continue;
+    const amt = parseFloat(m[1].replace(/,/g, ''));
+    if (!amt || amt <= 0 || amt > 100000) continue;
+    // Card-row container dhoondo (jisme card ka naam ho).
+    let el = node, ctx = '';
+    for (let i = 0; i < 8 && el.parentElement; i++) {
+      el = el.parentElement;
+      const at = (el.textContent || '').replace(/\s+/g, ' ');
+      if (BANK_NAME_RE.test(at) && at.length < 400) { ctx = at.toLowerCase(); break; }
+    }
+    if (ctx) out.push({ amt, ctx });
+  }
+  return out;
+}
+
+// Bank + generic words — card ke distinctive product tokens nikaalne ke liye hataao.
+const OFFER_GENERIC_WORDS = new Set([
+  'bank', 'credit', 'debit', 'card', 'cards', 'the', 'of', 'and', 'private', 'metal', 'signature',
+  'platinum', 'plus', 'pro', 'select', 'prime', 'gold', 'classic', 'rupay', 'visa', 'mastercard',
+  'icici', 'hdfc', 'sbi', 'axis', 'kotak', 'rbl', 'indusind', 'yes', 'idfc', 'hsbc', 'amex',
+  'american', 'express', 'federal', 'dbs', 'baroda', 'standard', 'chartered', 'citi', 'onecard', 'first',
+]);
+
+// Card ko uske apne page-offer se match karo (naam ke distinctive tokens se). No match -> 0.
+function matchCardOffer(cardName, cardOffers) {
+  if (!cardOffers || !cardOffers.length) return 0;
+  const tokens = String(cardName).toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/)
+    .filter((t) => t.length > 2 && !OFFER_GENERIC_WORDS.has(t));
+  if (!tokens.length) return 0; // koi distinctive token nahi -> safe: no offer (over-credit se bacho)
+  const matches = cardOffers.filter((o) => tokens.every((t) => o.ctx.includes(t)));
+  return matches.length ? Math.min(...matches.map((o) => o.amt)) : 0;
+}
+
 function readOffersFromDOM() {
   const texts = new Set();
 
@@ -250,16 +294,16 @@ async function evaluateAndRender() {
     baseOpts.getRemaining = window.CardWizCapTracker.makeGetRemaining(capUsage, new Date());
   }
 
-  // ── "Your cards" — owned cards, page-offers factored in ──
+  // ── "Your cards" — owned cards, CARD-SPECIFIC page offers factored in ──
   const offerTexts = readOffersFromDOM();
   const offersByBank = window.CardWizOffers.bestOffersByBank(offerTexts, amount || 0);
+  const cardOffers = readPaymentCardOffers(); // har card ka apna instant offer (bank-level nahi)
   let ownedRanked = [];
   if (owned.length) {
     ownedRanked = window.CardWizEngine.recommend(DB, { ...baseOpts, ownedCardIds: owned });
     ownedRanked.forEach((r) => {
-      const m = offersByBank[r.bank];
-      r.offerValue = m ? Math.min(m.value, amount || m.value) : 0;
-      r.offerRaw = m ? m.offer.raw : null;
+      const off = matchCardOffer(r.name, cardOffers); // sirf isi card ka offer
+      r.offerValue = off > 0 ? Math.min(off, amount || off) : 0;
       r.total = r.savings + r.offerValue;
     });
     ownedRanked.sort((a, b) => (b.total - a.total) || (b.rate - a.rate));
