@@ -187,16 +187,19 @@ function readPaymentCardOffers() {
     if (node.children.length > 3) continue;
     const own = (node.textContent || '').replace(/\s+/g, ' ').trim();
     if (own.length < 6 || own.length > 220) continue;
-    const m = own.match(/(?:₹|rs\.?|inr)\s*([\d,]+(?:\.\d+)?)\s*(?:off|discount)\b/i);
+    // ₹ OPTIONAL (Amazon symbol ko alag element me rakhta hai — leaf text me sirf
+    // "3500.00 off with this card" aata hai). Strong phrase required, taaki "10% off"
+    // jaise generic coupons match na hon.
+    const m = own.match(/(?:₹|rs\.?|inr)?\s*([\d,]+(?:\.\d{1,2})?)\s*off\s+(?:with\s+this\s+card|on\s+full\s+payment)/i);
     if (!m) continue;
     const amt = parseFloat(m[1].replace(/,/g, ''));
     if (!amt || amt <= 0 || amt > 100000) continue;
     // Card-row container dhoondo (jisme card ka naam ho).
     let el = node, ctx = '';
-    for (let i = 0; i < 8 && el.parentElement; i++) {
+    for (let i = 0; i < 10 && el.parentElement; i++) {
       el = el.parentElement;
       const at = (el.textContent || '').replace(/\s+/g, ' ');
-      if (BANK_NAME_RE.test(at) && at.length < 400) { ctx = at.toLowerCase(); break; }
+      if (BANK_NAME_RE.test(at) && at.length < 600) { ctx = at.toLowerCase(); break; }
     }
     if (ctx) out.push({ amt, ctx });
   }
