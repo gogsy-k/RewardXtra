@@ -440,7 +440,18 @@ async function evaluateAndRender() {
         .filter((c) => c.cardId === r.id)
         .map((c) => String(c.last4 || '').replace(/\D/g, ''))
         .filter((s) => s.length === 4);
-      const off = matchCardOffer(r.name, r.bank, l4s, cardOffers, claimed); // sirf isi card ka offer (bank verified)
+      let off = matchCardOffer(r.name, r.bank, l4s, cardOffers, claimed); // sirf isi card ka offer (bank verified)
+      // Fallback (Flipkart/cart-style pages): agar page pe is bank ki CARD-SPECIFIC rows
+      // nahi hain, to bank-wide offer ("5% off on Axis Bank Cards") us bank ke har card
+      // pe genuinely lagta hai — wahi lagao. (Amazon jaise per-card pages pe fallback OFF,
+      // warna wahi purana over-credit bug.)
+      if (!off && !cardOffers.some((o) => bankMatchesCtx(r.bank, o.ctx))) {
+        const m = offersByBank[r.bank];
+        if (m && m.value > 0) {
+          off = m.value;
+          dbg('offer via bank-wide (page offer):', r.bank, '→ ₹' + off, '|', String((m.offer && m.offer.raw) || '').slice(0, 60));
+        }
+      }
       r.offerValue = off > 0 ? Math.min(off, amount || off) : 0;
       r.total = r.savings + r.offerValue;
     });
