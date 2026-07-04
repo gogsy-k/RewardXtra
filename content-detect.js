@@ -215,6 +215,14 @@ function getWalletState() {
 
 let lastSignature = null; // dohraav rokne ke liye (SPA re-eval)
 
+// i18n helper — CardWizI18n.t() + {var} interpolation. Falls back to key if i18n missing.
+function T(key, vars) {
+  const i18n = (typeof window !== 'undefined') && window.CardWizI18n;
+  let s = (i18n && i18n.t) ? i18n.t(key) : key;
+  if (vars) for (const k in vars) s = s.split('{' + k + '}').join(String(vars[k]));
+  return s;
+}
+
 async function evaluateAndRender() {
   const site = detectSite(location.hostname);
   if (!site) return;
@@ -290,18 +298,18 @@ function renderWidget(site, amount, ranked, usingWallet, otherOffers, myCards) {
   top3.forEach((r, i) => {
     const star = i === 0 ? '⭐ ' : '';
     const isCash = r.type === 'cashback';
-    const typeLabel = isCash ? 'cashback' : r.type === 'miles' ? 'in miles' : 'in points';
+    const typeLabel = isCash ? T('cw_type_cashback') : r.type === 'miles' ? T('cw_type_miles') : T('cw_type_points');
     const typeClass = isCash ? 'tag-cash' : r.type === 'miles' ? 'tag-miles' : 'tag-pts';
     // Cashback = asli ₹; points/miles = estimated ₹ value (≈ se signal).
     const approx = isCash ? '' : '≈';
     let right;
     if (hasAmount) {
       const rewardRow = `<span class="rewardrow"><span class="reward">${approx}₹${r.savings}</span><span class="pill ${typeClass}">${typeLabel}</span></span>`;
-      const offerLine = r.offerValue > 0 ? `<span class="offer">+₹${r.offerValue} instant off</span>` : '';
-      const capLine = r.capExhausted ? '<span class="capnote khatam">cap khatam</span>'
-                    : (r.capped ? '<span class="capnote">cap tak</span>' : '');
+      const offerLine = r.offerValue > 0 ? `<span class="offer">+₹${r.offerValue} ${T('cw_instant_off')}</span>` : '';
+      const capLine = r.capExhausted ? `<span class="capnote khatam">${T('pop_cap_khatam')}</span>`
+                    : (r.capped ? `<span class="capnote">${T('cw_cap_tak')}</span>` : '');
       const diff = (i === 0 && top3.length > 1) ? r.savings - top3[1].savings : 0;
-      const whyLine = diff > 0 ? `<span class="whydiff">+₹${diff} vs next</span>` : '';
+      const whyLine = diff > 0 ? `<span class="whydiff">+₹${diff} ${T('cw_vs_next')}</span>` : '';
       right = rewardRow + offerLine + capLine + whyLine;
     } else {
       right = `<span class="rewardrow"><span class="reward">${r.rate}%</span><span class="pill ${typeClass}">${typeLabel}</span></span>`;
@@ -309,7 +317,7 @@ function renderWidget(site, amount, ranked, usingWallet, otherOffers, myCards) {
     const walletEntry = myCards && myCards.find((c) => c.cardId === r.id);
     let subtitle = '';
     if (walletEntry) {
-      const endingPart = walletEntry.last4 ? `ending with ${walletEntry.last4}` : '';
+      const endingPart = walletEntry.last4 ? T('cw_ending', { n: walletEntry.last4 }) : '';
       if (walletEntry.nickname && endingPart) subtitle = `${walletEntry.nickname} - ${endingPart}`;
       else if (walletEntry.nickname) subtitle = walletEntry.nickname;
       else subtitle = endingPart;
@@ -325,16 +333,14 @@ function renderWidget(site, amount, ranked, usingWallet, otherOffers, myCards) {
   });
 
   const headline = hasAmount
-    ? `Is ₹${amount} ${site.merchant} purchase pe:`
-    : `${site.merchant} pe best card:`;
+    ? T('cw_headline_amount', { amt: amount, merchant: site.merchant })
+    : T('cw_headline_noamount', { merchant: site.merchant });
 
-  const sourceNote = usingWallet
-    ? 'Aapke cards mein se 💼'
-    : 'Sabhi cards mein se — apne cards "Mere Cards" mein add karo';
+  const sourceNote = usingWallet ? T('cw_source_wallet') : T('cw_source_all');
 
   // Jo offers kisi DB-card se match nahi (Kotak etc.) — chhoti info line.
   const otherOffersHtml = (otherOffers && otherOffers.length)
-    ? `<div class="offers">💡 Page pe aur offers: ${escapeHtml(otherOffers.join(', '))}</div>`
+    ? `<div class="offers">💡 ${T('cw_more_offers')}: ${escapeHtml(otherOffers.join(', '))}</div>`
     : '';
 
   // Phase 6: affiliate "Buy via our link" (no extra cost) + disclosure.
@@ -342,8 +348,8 @@ function renderWidget(site, amount, ranked, usingWallet, otherOffers, myCards) {
     ? window.CardWizAffiliate.affiliateUrl(site.category, location.href)
     : { affiliated: false };
   const affHtml = aff.affiliated
-    ? `<button class="buy" data-url="${escapeHtml(aff.url)}">🛒 Buy via our link (no extra cost)</button>
-       <div class="disc">${escapeHtml(aff.disclosure)}</div>`
+    ? `<button class="buy" data-url="${escapeHtml(aff.url)}">${T('cw_buy_link')}</button>
+       <div class="disc">${T('cw_disclosure')}</div>`
     : '';
 
   shadow.innerHTML = `
@@ -397,13 +403,13 @@ function renderWidget(site, amount, ranked, usingWallet, otherOffers, myCards) {
     <div class="box">
       <div class="hd">
         <span class="title">💳 CardWiz</span>
-        <button class="x" title="Band karo">✕</button>
+        <button class="x" title="${T('cw_close')}">✕</button>
       </div>
       <div class="headline">${escapeHtml(headline)}</div>
       ${listHtml}
       ${otherOffersHtml}
       ${affHtml}
-      <div class="ft"><b>${escapeHtml(sourceNote)}</b><br>≈ = points/miles ki estimated ₹ value · "offer" = instant discount<br>🔒 Read-only · data sirf is device pe</div>
+      <div class="ft"><b>${escapeHtml(sourceNote)}</b><br>${T('cw_ft_approx')}<br>${T('cw_ft_readonly')}</div>
     </div>
   `;
 
@@ -431,7 +437,24 @@ function init() {
     evaluateAndRender().catch(() => {});
     if (++tries < 5) setTimeout(retry, 1200);
   };
-  setTimeout(retry, 600);
+  // User ki selected language (chrome.storage 'cwLang') pehle load karo, phir render.
+  const start = () => setTimeout(retry, 600);
+  if (window.CardWizI18n && window.CardWizI18n.loadLang) {
+    window.CardWizI18n.loadLang().then(start, start);
+  } else {
+    start();
+  }
+
+  // Popup mein language change ho to widget bhi turant us language mein re-render ho.
+  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === 'local' && changes.cwLang && window.CardWizI18n) {
+        window.CardWizI18n.setLangValue(changes.cwLang.newValue || 'en');
+        lastSignature = null; // force re-render
+        evaluateAndRender().catch(() => {});
+      }
+    });
+  }
 
   // SPA (Flipkart/Myntra) URL change pe re-evaluate.
   let lastPath = location.pathname + location.search;
