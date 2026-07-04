@@ -140,6 +140,20 @@ const OFFER_VALUE_HINT = /(credit card|debit card|emi|instant|cashback|%|₹\s*\
 
 const BANK_NAME_RE = /(hdfc|icici|sbi|axis|kotak|amex|american express|indusind|yes bank|rbl|idfc|federal|standard chartered|hsbc|au bank|bob|bank of baroda|citi|onecard)/i;
 
+// ctx me kitne DISTINCT banks hain — 2+ matlab ctx do cards ko cover kar raha hai (ambiguous).
+function distinctBanks(ctx) {
+  const re = /(hdfc|icici|sbi|axis|kotak|amex|american express|indusind|yes bank|rbl|idfc|federal|standard chartered|hsbc|au bank|bank of baroda|citi|onecard)/gi;
+  const set = new Set();
+  let m;
+  while ((m = re.exec(String(ctx || '')))) {
+    let b = m[1].toLowerCase();
+    if (b === 'american express') b = 'amex';
+    if (b === 'bank of baroda') b = 'bob';
+    set.add(b);
+  }
+  return set;
+}
+
 // Sirf "X off on full payment" wala instant-discount pattern (screenshot wala).
 // "select products" coupons / EMI / concatenated garbage ko ignore karta hai —
 // warna "500.0010% off" jaise mangled text 500% ban jaata tha.
@@ -244,6 +258,13 @@ function readPaymentCardOffers(doc) {
         if (at.length > 1200) break; // container ab poori list jitna bada — aage mat jao
         if (BANK_NAME_RE.test(at)) { ctx = at.toLowerCase().slice(0, 600); break; }
       }
+    }
+    // GUARD: ctx me EXACTLY EK bank hona chahiye. 2+ banks = ctx do cards ko nigal
+    //   gaya (padosi card ke tokens leak) → ambiguous → poori tarah drop. (Yahi
+    //   Flipkart Axis pe ICICI ka ₹3000 phantom bana raha tha.)
+    if (ctx && distinctBanks(ctx).size !== 1) {
+      dbg('offer ctx me 0/2+ banks — ambiguous, DROP ₹' + amt + ':', ctx.slice(0, 75));
+      ctx = '';
     }
     if (ctx) out.push({ amt, ctx }); else noCtx++;
   }
@@ -412,7 +433,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v9'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v10'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
