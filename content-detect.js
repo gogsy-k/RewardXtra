@@ -433,7 +433,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v11'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v12'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -449,23 +449,69 @@ function amtNear(text) {
   return m ? parseFloat(m[1].replace(/,/g, '')) : 0;
 }
 
+// Label ke THEEK BAAD wala amount lo — blob ka pehla ₹ nahi. Yahi bug tha: combined
+// "Discounts: MRP Discount -₹27,000  Bank Offer Discount -₹3,000" me amtNear pehla
+// ₹27,000 utha leta tha. /bank offer discount/ ke baad wala hi chahiye -> ₹3,000.
+function amtAfterLabel(text, labelRe) {
+  const s = String(text || '').replace(/\s+/g, ' ');
+  const re = new RegExp(labelRe.source, labelRe.flags.replace('g', ''));
+  const m = re.exec(s);
+  if (!m) return 0;
+  return amtNear(s.slice(m.index + m[0].length, m.index + m[0].length + 40));
+}
+
 // Summary me se ek labelled line ka amount ("Bank Offer Discount -₹2,000" -> 2000).
+// Amount HAMESHA label ke aas-paas se — kabhi container ke pehle ₹ se nahi.
 function readSummaryLine(labelRe) {
-  const nodes = document.querySelectorAll('div, span, td, p, li, strong, b, dt, dd');
+  const nodes = document.querySelectorAll('div, span, td, p, li, strong, b, dt, dd, tr');
   for (const n of nodes) {
-    if (n.children.length > 4) continue;
+    if (n.children.length > 6) continue;
     const t = (n.textContent || '').replace(/\s+/g, ' ').trim();
-    if (t.length > 90 || !labelRe.test(t)) continue;
-    const v = amtNear(t)
-      || amtNear(n.nextElementSibling && n.nextElementSibling.textContent)
-      || amtNear(n.parentElement && n.parentElement.textContent);
+    if (t.length > 120 || !labelRe.test(t)) continue;
+    let v = amtAfterLabel(t, labelRe);                                       // label ke baad (blob-safe)
+    if (!v) v = amtNear(n.nextElementSibling && n.nextElementSibling.textContent); // value alag cell me
+    if (!v && n.parentElement && n.parentElement.children.length <= 6)
+      v = amtAfterLabel(n.parentElement.textContent, labelRe);
     if (v > 0) return v;
   }
   return 0;
 }
 
-// Currently-selected payment card (checked radio) ka context — bank + last4 (single-bank).
+// Kya ye container "selected/active" card hai? Native radio ke bharose nahi — Flipkart
+// custom (styled) radio use karta hai. Active card hi CVV field + "Pay ₹X" button dikhata
+// hai, ya checked radio / aria-checked rakhta hai. Yahi cross-site robust signal hai.
+function isSelectedContainer(el) {
+  try {
+    const r = el.querySelector('input[type="radio"]');
+    if (r && r.checked) return true;
+    if (el.querySelector('[aria-checked="true"], [aria-selected="true"]')) return true;
+    if (el.querySelector('input[maxlength="3"], input[placeholder*="cvv" i], input[name*="cvv" i], input[id*="cvv" i]')) return true;
+    const btns = el.querySelectorAll('button, a, [role="button"]');
+    for (const b of btns) {
+      const bt = (b.textContent || '').replace(/\s+/g, ' ').toLowerCase();
+      if (/\bpay\s*(?:₹|rs|inr|\d)|place order|pay now|make payment/.test(bt)) return true;
+    }
+  } catch (_) { /* noop */ }
+  return false;
+}
+
+// Currently-selected payment card ka context — bank + last4 (single-bank, TIGHT title ctx).
+// Har card-title (bank + ek last4) ke container me "selected" signals dhoondhte hain,
+// taaki Flipkart ke custom-radio par bhi sahi card pakde. Fallback: native checked radio.
 function selectedCardInfo() {
+  const titles = findCardTitleNodes(document);
+  for (const { node, text } of titles) {
+    if (distinctBanks(text).size !== 1 || !ctxLast4s(text).length) continue;
+    let el = node;
+    for (let i = 0; i < 8 && el.parentElement; i++) {
+      el = el.parentElement;
+      if ((el.textContent || '').length > 700) break;              // itna bada = poori list, ruk jao
+      if (isSelectedContainer(el)) {
+        return { ctx: text, bank: (text.match(BANK_NAME_RE) || [])[0] || '', last4: ctxLast4s(text)[0] || '' };
+      }
+    }
+  }
+  // Fallback (Amazon jaise native radios): checked radio se upar chal ke bank+last4 ctx.
   const radios = document.querySelectorAll('input[type="radio"]');
   for (const r of radios) {
     if (!(r.checked || r.getAttribute('aria-checked') === 'true')) continue;
@@ -565,24 +611,31 @@ async function evaluateAndRender() {
     });
 
     // ── SELECTED card: page ke summary ka EXACT offer + cashback use karo (estimate override) ──
+    // Ye AUTHORITATIVE hai — "Bank Offer Discount -₹2,000" seedha page se; estimate override.
     const sel = selectedCardInfo();
     if (sel) {
       const sumOffer = readSummaryLine(/(bank offer discount|instant bank discount)/i);
       const sumCash = readSummaryLine(/bank cashback/i);
+      dbg('SELECTED:', (sel.bank || '?') + ' ' + (sel.last4 || '?'),
+        '| page offer ₹' + sumOffer, '| page cashback ₹' + sumCash, '| ctx:', sel.ctx.slice(0, 60));
       if (sumOffer > 0 || sumCash > 0) {
-        const selCard = ownedRanked.find((r) => {
+        // Do cards ka last4 same ho sakta hai (Coral + Instant Platinum dono •3003) — sabko
+        // page-actual do (page inhe distinguish nahi karta; number waise bhi same hai).
+        const selCards = ownedRanked.filter((r) => {
           const l4s = (myCards || []).filter((c) => c.cardId === r.id)
             .map((c) => String(c.last4 || '').replace(/\D/g, '')).filter((s) => s.length === 4);
           return cardMatchesCtx(r.name, r.bank, l4s, sel.ctx);
         });
-        if (selCard) {
-          if (sumOffer > 0) selCard.offerValue = Math.min(sumOffer, amount || sumOffer);
-          if (sumCash > 0) { selCard.savings = sumCash; selCard.capped = false; selCard.capExhausted = false; }
-          selCard.total = selCard.savings + selCard.offerValue;
-          dbg('SELECTED card page-actuals:', selCard.name, '| ' + sel.bank + ' ' + sel.last4,
-            '| offer ₹' + selCard.offerValue + ' | cashback ₹' + sumCash);
+        if (selCards.length) {
+          selCards.forEach((selCard) => {
+            if (sumOffer > 0) selCard.offerValue = Math.min(sumOffer, amount || sumOffer);
+            if (sumCash > 0) { selCard.savings = sumCash; selCard.capped = false; selCard.capExhausted = false; }
+            selCard.total = selCard.savings + selCard.offerValue;
+            selCard.pageActual = true; // page se pakka number (estimate nahi)
+            dbg('  ✓ page-actuals →', selCard.name, '| offer ₹' + selCard.offerValue + ' | cashback ₹' + (sumCash || selCard.savings));
+          });
         } else {
-          dbg('SELECTED card (' + sel.bank + ' ' + sel.last4 + ') owned me match nahi — override skip');
+          dbg('  ✗ SELECTED (' + sel.bank + ' ' + sel.last4 + ') owned me match nahi — override skip');
         }
       }
     }
