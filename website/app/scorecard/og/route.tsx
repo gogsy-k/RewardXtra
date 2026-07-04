@@ -25,44 +25,44 @@ export function GET(req: Request) {
           display: "flex",
           flexDirection: "column",
           padding: "70px 80px",
-          background: "linear-gradient(135deg, #0C1018 0%, #131A2B 100%)",
-          color: "#E8ECF4",
+          background: "linear-gradient(135deg, #171717 0%, #1F1F1F 100%)",
+          color: "#F5F5F5",
         }}
       >
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontSize: 40, fontWeight: 900, color: "#818CF8" }}>💳 CardWiz</div>
-          <div style={{ fontSize: 26, color: "#8A93AC" }}>{period} · Savings Scorecard</div>
+          <div style={{ fontSize: 40, fontWeight: 900, color: "#21F1A8" }}>💳 CardWiz</div>
+          <div style={{ fontSize: 26, color: "#A0A0A0" }}>{period} · Savings Scorecard</div>
         </div>
 
         {name ? (
-          <div style={{ marginTop: 34, fontSize: 34, color: "#B7C0D4" }}>{name}'s rewards</div>
+          <div style={{ marginTop: 34, fontSize: 34, color: "#CFCFCF" }}>{name}'s rewards</div>
         ) : (
-          <div style={{ marginTop: 34, fontSize: 34, color: "#B7C0D4" }}>My card rewards</div>
+          <div style={{ marginTop: 34, fontSize: 34, color: "#CFCFCF" }}>My card rewards</div>
         )}
 
         {/* Big earned number */}
         <div style={{ marginTop: 8, display: "flex", alignItems: "flex-end", gap: 18 }}>
-          <div style={{ fontSize: 130, fontWeight: 900, color: "#34D399", lineHeight: 1 }}>{earned}</div>
-          <div style={{ fontSize: 36, color: "#8A93AC", paddingBottom: 18 }}>earned</div>
+          <div style={{ fontSize: 130, fontWeight: 900, color: "#21F1A8", lineHeight: 1 }}>{earned}</div>
+          <div style={{ fontSize: 36, color: "#A0A0A0", paddingBottom: 18 }}>earned</div>
         </div>
 
         {/* Stat row */}
         <div style={{ marginTop: 50, display: "flex", gap: 24 }}>
-          <div style={{ display: "flex", flexDirection: "column", background: "#1A2336", borderRadius: 18, padding: "22px 28px", flex: 1 }}>
-            <div style={{ fontSize: 26, color: "#8A93AC" }}>Left on table</div>
+          <div style={{ display: "flex", flexDirection: "column", background: "#242424", borderRadius: 18, padding: "22px 28px", flex: 1 }}>
+            <div style={{ fontSize: 26, color: "#A0A0A0" }}>Left on table</div>
             <div style={{ fontSize: 52, fontWeight: 900, color: "#FB7185" }}>{missed}</div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", background: "#1A2336", borderRadius: 18, padding: "22px 28px", flex: 1 }}>
-            <div style={{ fontSize: 26, color: "#8A93AC" }}>Reward efficiency</div>
+          <div style={{ display: "flex", flexDirection: "column", background: "#242424", borderRadius: 18, padding: "22px 28px", flex: 1 }}>
+            <div style={{ fontSize: 26, color: "#A0A0A0" }}>Reward efficiency</div>
             <div style={{ fontSize: 52, fontWeight: 900, color: "#FBBF24" }}>{eff}%</div>
           </div>
         </div>
 
         {/* Footer */}
         <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 26 }}>
-          <div style={{ color: "#B7C0D4" }}>Apna scorecard banao 👉</div>
-          <div style={{ color: "#818CF8", fontWeight: 700 }}>cardwiz.in</div>
+          <div style={{ color: "#CFCFCF" }}>Apna scorecard banao 👉</div>
+          <div style={{ color: "#21F1A8", fontWeight: 700 }}>cardwiz.in</div>
         </div>
       </div>
     ),

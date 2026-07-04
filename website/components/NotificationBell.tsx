@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLang } from "@/contexts/LangContext";
 import { getNotifications, markNotificationsRead, type Notif } from "@/lib/notifications-api";
@@ -59,7 +60,7 @@ export default function NotificationBell() {
         className="relative flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface2 text-base transition-colors hover:border-accent"
         aria-label={t("notif_title")}
       >
-        🔔
+        <Bell className="h-4 w-4 text-accent" strokeWidth={2.5} />
         {unread > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-pink px-1 text-[10px] font-bold text-white">
             {unread > 9 ? "9+" : unread}

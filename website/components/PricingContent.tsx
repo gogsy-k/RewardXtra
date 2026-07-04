@@ -13,7 +13,7 @@ export default function PricingContent() {
     <>
       {/* HEADER */}
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[320px] bg-[radial-gradient(ellipse_60%_60%_at_50%_0%,rgba(99,102,241,0.16),transparent_70%)]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[320px] bg-[radial-gradient(ellipse_60%_60%_at_50%_0%,rgba(33,241,168,0.16),transparent_70%)]" />
         <div className="mx-auto max-w-3xl px-5 pb-10 pt-20 text-center">
           <span className="inline-block rounded-full border border-border bg-surface px-4 py-1.5 text-xs font-semibold text-green">
             {t("pricing_badge")}

@@ -11,8 +11,10 @@ import { pickPostsForLang, type Post } from "@/lib/posts";
 import type { Card } from "@/lib/cards";
 import NotifyCTA from "@/components/NotifyCTA";
 import SavingsCalculator from "@/components/SavingsCalculator";
+import { ShoppingCart, CreditCard, Landmark, Bell, Lock, Star, Bot, Tag, Target, BarChart3, Newspaper } from "lucide-react";
 
-const FEAT_ICONS = ["🛒", "💳", "🏦", "🔔", "🔒", "⭐"];
+// Feature-grid icons — single-colour Lucide (green accent) instead of multicolour emoji.
+const FEAT_ICONS = [ShoppingCart, CreditCard, Landmark, Bell, Lock, Star];
 
 const heroContainer = { hidden: {}, show: { transition: { staggerChildren: 0.07, delayChildren: 0.04 } } };
 const heroItem = {
@@ -38,20 +40,20 @@ export default function HomeContent({
   // One card per article in the selected language (dedupes translations).
   const newsPosts = pickPostsForLang(posts, lang).slice(0, 3);
 
-  const features = FEAT_ICONS.map((icon, i) => ({
-    icon,
+  const features = FEAT_ICONS.map((Icon, i) => ({
+    Icon,
     title: t(`feat_${i}_title`),
     desc: t(`feat_${i}_desc`),
   }));
 
   // Live entry points — har card ek real page pe le jaata hai (no dead text).
   const explore = [
-    { icon: "🤖", href: "/ai",           tk: "ai" },
-    { icon: "🏷️", href: "/offers",       tk: "offers" },
-    { icon: "🎯", href: "/find-my-card", tk: "find" },
-    { icon: "💳", href: "/cards",        tk: "cards" },
-    { icon: "📊", href: "/account",      tk: "acct" },
-    { icon: "📰", href: "/news",         tk: "news" },
+    { Icon: Bot,        href: "/ai",           tk: "ai" },
+    { Icon: Tag,        href: "/offers",       tk: "offers" },
+    { Icon: Target,     href: "/find-my-card", tk: "find" },
+    { Icon: CreditCard, href: "/cards",        tk: "cards" },
+    { Icon: BarChart3,  href: "/account",      tk: "acct" },
+    { Icon: Newspaper,  href: "/news",         tk: "news" },
   ];
 
   const steps = [
@@ -72,7 +74,7 @@ export default function HomeContent({
     <>
       {/* HERO */}
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(ellipse_60%_60%_at_50%_0%,rgba(99,102,241,0.18),transparent_70%)]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(ellipse_60%_60%_at_50%_0%,rgba(33,241,168,0.12),transparent_70%)]" />
         <motion.div
           className="mx-auto max-w-4xl px-5 pb-16 pt-20 text-center sm:pt-28"
           variants={heroContainer}
@@ -129,13 +131,15 @@ export default function HomeContent({
         <h2 className="text-center text-2xl sm:text-3xl font-extrabold">{t("explore_h")}</h2>
         <p className="mt-2 text-center text-subtle">{t("explore_sub")}</p>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {explore.map((x, i) => (
+          {explore.map((x, i) => {
+            const Icon = x.Icon;
+            return (
             <Reveal key={x.href + x.tk} delay={i * 0.05} className="h-full">
               <Link
                 href={x.href}
                 className="group flex h-full flex-col rounded-2xl border border-accent/40 bg-surface2 p-6 transition hover:-translate-y-0.5 hover:border-accent"
               >
-                <div className="text-3xl">{x.icon}</div>
+                <Icon className="h-8 w-8 text-accent" strokeWidth={2} />
                 <h3 className="mt-3 font-bold">{t(`xp_${x.tk}_t`)}</h3>
                 <p className="mt-1.5 flex-1 text-sm leading-relaxed text-subtle">{t(`xp_${x.tk}_d`)}</p>
                 <span className="mt-4 text-sm font-bold text-accent transition-transform group-hover:translate-x-0.5">
@@ -143,7 +147,8 @@ export default function HomeContent({
                 </span>
               </Link>
             </Reveal>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -152,15 +157,18 @@ export default function HomeContent({
         <h2 className="text-center text-2xl sm:text-3xl font-extrabold">{t("home_feat_h")}</h2>
         <p className="mt-2 text-center text-subtle">{t("home_feat_sub")}</p>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((f, i) => (
+          {features.map((f, i) => {
+            const Icon = f.Icon;
+            return (
             <Reveal key={f.title} delay={i * 0.05} className="h-full">
               <div className="h-full rounded-2xl border border-border bg-surface2 p-6 transition-colors hover:border-border/80">
-                <div className="text-3xl">{f.icon}</div>
+                <Icon className="h-8 w-8 text-accent" strokeWidth={2} />
                 <h3 className="mt-3 font-bold">{f.title}</h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-subtle">{f.desc}</p>
               </div>
             </Reveal>
-          ))}
+            );
+          })}
         </div>
       </section>
 

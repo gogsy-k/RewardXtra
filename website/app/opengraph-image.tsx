@@ -16,15 +16,15 @@ export default function OgImage() {
           flexDirection: "column",
           justifyContent: "center",
           padding: "80px",
-          background: "linear-gradient(135deg, #0C1018 0%, #090D15 100%)",
-          color: "#E8ECF4",
+          background: "linear-gradient(135deg, #171717 0%, #0F0F0F 100%)",
+          color: "#F5F5F5",
         }}
       >
-        <div style={{ fontSize: 72, fontWeight: 900, color: "#818CF8" }}>💳 CardWiz</div>
+        <div style={{ fontSize: 72, fontWeight: 900, color: "#21F1A8" }}>💳 CardWiz</div>
         <div style={{ marginTop: 24, fontSize: 44, fontWeight: 700, lineHeight: 1.2, maxWidth: 900 }}>
           India ka smart credit &amp; debit card reward finder
         </div>
-        <div style={{ marginTop: 28, fontSize: 30, color: "#B7C0D4" }}>
+        <div style={{ marginTop: 28, fontSize: 30, color: "#CFCFCF" }}>
           195+ cards · best card at checkout · privacy-first
         </div>
         <div
@@ -33,7 +33,7 @@ export default function OgImage() {
             display: "flex",
             gap: 16,
             fontSize: 24,
-            color: "#818CF8",
+            color: "#21F1A8",
           }}
         >
           <span>cardwiz.in</span>

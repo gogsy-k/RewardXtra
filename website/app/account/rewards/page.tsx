@@ -102,7 +102,7 @@ export default function RewardsPage() {
 
       {/* Balance */}
       <div className="rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/10 to-surface2 p-6 text-center">
-        <div className="text-5xl font-black tabular-nums text-accent [text-shadow:0_0_24px_rgba(99,102,241,0.4)]">
+        <div className="text-5xl font-black tabular-nums text-accent [text-shadow:0_0_24px_rgba(33,241,168,0.4)]">
           {loading ? "…" : points.toLocaleString("en-IN")}
         </div>
         <div className="mt-1 text-xs font-bold uppercase tracking-wide text-subtle">{t("rw_points")}</div>

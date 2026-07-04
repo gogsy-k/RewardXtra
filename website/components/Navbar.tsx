@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
+import { CreditCard, Menu, X } from "lucide-react";
 import { useLang } from "@/contexts/LangContext";
 import { useAuth } from "@/contexts/AuthContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -39,7 +40,7 @@ export default function Navbar() {
       <nav className="flex w-full items-center justify-between gap-4 px-5 py-3 sm:px-8">
         {/* Logo */}
         <Link href="/" className="flex shrink-0 items-center gap-1.5 text-lg font-black tracking-tight">
-          <span className="text-xl leading-none">💳</span>
+          <CreditCard className="h-5 w-5 text-accent" strokeWidth={2.5} />
           <span className="text-accent">CardWiz</span>
         </Link>
 
@@ -88,11 +89,11 @@ export default function Navbar() {
           <AuthButton />
           <button
             onClick={() => setOpen((v) => !v)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-lg text-subtle transition-colors hover:border-accent hover:text-fg"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-subtle transition-colors hover:border-accent hover:text-fg"
             aria-label="Menu"
             aria-expanded={open}
           >
-            {open ? "✕" : "☰"}
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </nav>
