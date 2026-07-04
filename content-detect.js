@@ -223,6 +223,12 @@ function T(key, vars) {
   return s;
 }
 
+// Rupee/percent display: round to 2 decimals, drop trailing .00 (no float noise like 32.6500006).
+function money(n) {
+  const r = Math.round((Number(n) || 0) * 100) / 100;
+  return Number.isInteger(r) ? String(r) : r.toFixed(2);
+}
+
 async function evaluateAndRender() {
   const site = detectSite(location.hostname);
   if (!site) return;
@@ -304,15 +310,15 @@ function renderWidget(site, amount, ranked, usingWallet, otherOffers, myCards) {
     const approx = isCash ? '' : '≈';
     let right;
     if (hasAmount) {
-      const rewardRow = `<span class="rewardrow"><span class="reward">${approx}₹${r.savings}</span><span class="pill ${typeClass}">${typeLabel}</span></span>`;
-      const offerLine = r.offerValue > 0 ? `<span class="offer">+₹${r.offerValue} ${T('cw_instant_off')}</span>` : '';
+      const rewardRow = `<span class="rewardrow"><span class="reward">${approx}₹${money(r.savings)}</span><span class="pill ${typeClass}">${typeLabel}</span></span>`;
+      const offerLine = r.offerValue > 0 ? `<span class="offer">+₹${money(r.offerValue)} ${T('cw_instant_off')}</span>` : '';
       const capLine = r.capExhausted ? `<span class="capnote khatam">${T('pop_cap_khatam')}</span>`
                     : (r.capped ? `<span class="capnote">${T('cw_cap_tak')}</span>` : '');
       const diff = (i === 0 && top3.length > 1) ? r.savings - top3[1].savings : 0;
-      const whyLine = diff > 0 ? `<span class="whydiff">+₹${diff} ${T('cw_vs_next')}</span>` : '';
+      const whyLine = diff > 0 ? `<span class="whydiff">+₹${money(diff)} ${T('cw_vs_next')}</span>` : '';
       right = rewardRow + offerLine + capLine + whyLine;
     } else {
-      right = `<span class="rewardrow"><span class="reward">${r.rate}%</span><span class="pill ${typeClass}">${typeLabel}</span></span>`;
+      right = `<span class="rewardrow"><span class="reward">${money(r.rate)}%</span><span class="pill ${typeClass}">${typeLabel}</span></span>`;
     }
     const walletEntry = myCards && myCards.find((c) => c.cardId === r.id);
     let subtitle = '';
@@ -349,7 +355,7 @@ function renderWidget(site, amount, ranked, usingWallet, otherOffers, myCards) {
     : { affiliated: false };
   const affHtml = aff.affiliated
     ? `<button class="buy" data-url="${escapeHtml(aff.url)}">${T('cw_buy_link')}</button>
-       <div class="disc">${T('cw_disclosure')}</div>`
+       <div class="disc">${T('cw_disclosure')} <b>${T('cw_donate')}</b></div>`
     : '';
 
   shadow.innerHTML = `
@@ -474,6 +480,21 @@ function init() {
   });
   window.addEventListener('popstate', onNav);
   setInterval(onNav, 1500); // fallback for sites that bypass history API
+
+  // Reload/late-load robustness: checkout totals + DOM often render after our retries
+  // finish, and some SPAs wipe the body on hydration (widget disappears & never returns).
+  // A debounced observer re-renders whenever a checkout page's DOM changes.
+  if (typeof MutationObserver !== 'undefined' && document.body) {
+    let debounce = null;
+    const obs = new MutationObserver(() => {
+      if (debounce || !isCheckoutish(location.pathname + location.search)) return;
+      debounce = setTimeout(() => {
+        debounce = null;
+        evaluateAndRender().catch(() => {});
+      }, 1000);
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+  }
 }
 
 // Browser mein hi init chalao; Node test mein nahi.
