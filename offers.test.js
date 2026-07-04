@@ -85,4 +85,32 @@ test('bestOffersByBank dedupes per bank + skips debit', () => {
   assert.strictEqual(best.SBI, undefined);      // debit skipped
 });
 
+// --- Myntra real strings: min-spend + EMI-only (console se) ---
+test('min-spend parsed + gated (SBI 10% on min spend ₹3,500)', () => {
+  const o = parseOffer('10% Instant Discount On SBI Credit Card on min spend of ₹3,500');
+  assert.strictEqual(o.bank, 'SBI');
+  assert.strictEqual(o.minSpend, 3500);
+  assert.strictEqual(o.emiOnly, false);
+  assert.strictEqual(offerValue(o, 3000), 0);    // 3000 < 3500 → offer nahi milega
+  assert.strictEqual(offerValue(o, 3995), 400);  // 10% of 3995 = 399.5 → 400
+});
+test('EMI-only offer flagged + skipped in bestOffersByBank (RBL)', () => {
+  const o = parseOffer('10% Instant Discount On RBL Bank Credit Card EMI on min spend of ₹3,500');
+  assert.strictEqual(o.emiOnly, true);
+  const best = bestOffersByBank(['10% Instant Discount On RBL Bank Credit Card EMI on min spend of ₹3,500'], 3995);
+  assert.strictEqual(best.RBL, undefined);       // EMI-only → skip
+});
+test('non-EMI credit card offer NOT flagged emiOnly', () => {
+  const o = parseOffer('10% off on HDFC Bank Credit Card and Credit Card EMI txns');
+  assert.strictEqual(o.emiOnly, false);          // "credit card and" = non-EMI path bhi hai
+});
+test('cap via "maximum discount of ₹X"', () => {
+  const o = parseOffer('Get 10% off, maximum discount of ₹250, on Axis Bank Credit Card');
+  assert.strictEqual(o.cap, 250);
+});
+test('cap NOT falsely taken from "up to 10%"', () => {
+  const o = parseOffer('Up to 10% Instant Discount on Kotak Bank Credit Card'); // no ₹ cap
+  assert.strictEqual(o.cap, null);
+});
+
 console.log(`\n${passed} tests passed.`);

@@ -53,7 +53,16 @@ function parseOffer(text) {
 
   const pct = text.match(/(\d+(?:\.\d+)?)\s*%/);
   const flat = text.match(/(?:flat\s*)?(?:(?:₹|rs\.?|inr)\s*)?([\d,]+(?:\.\d+)?)\s*off\b/i);
-  const cap = text.match(/up\s*to\s*(?:₹|rs\.?|inr)?\s*([\d,]+)/i);
+  // Cap ("up to ₹X" / "max discount ₹X"). Currency ZAROORI — warna "up to 10%" me 10 cap ban
+  // jata (10% instant off ka 10 cap → offer ₹10 galat). Cap hamesha ₹-value hota hai.
+  const cap = text.match(/(?:up\s*to|upto|max(?:imum)?(?:\s*discount)?(?:\s*of)?)\s*(?:₹|rs\.?|inr)\s*([\d,]+)/i);
+  // Minimum spend/order ("on min spend of ₹3,500", "min order value ₹999", "orders above ₹500").
+  const minSpend = text.match(/(?:min(?:imum)?\.?\s*(?:spend|order|purchase|transaction|txn|cart|amount|value)?(?:\s*(?:value|of|amount|spend))?|orders?\s+(?:above|over)|above|purchase\s+of)\s*(?:of\s*)?(?:₹|rs\.?|inr)\s*([\d,]+)/i);
+
+  // EMI-only? "…Credit Card EMI…" jahan koi non-EMI credit-card path nahi. Normal purchase pe
+  // ye instant off milta hi nahi — isliye bank-wide me skip (warna har EMI offer flat off dikhta).
+  const emiOnly = (/credit\s*card\s*emi/i.test(text) && !/credit\s*card(?!\s*emi)/i.test(text))
+    || /emi\s*(?:transactions?\s*)?only/i.test(text);
 
   let kind, percent = null, flatOff = null;
   if (pct) { kind = 'percent'; percent = parseFloat(pct[1]); }
@@ -67,6 +76,8 @@ function parseOffer(text) {
     percent,
     flat: flatOff,
     cap: cap ? toNum(cap[1]) : null,
+    minSpend: minSpend ? toNum(minSpend[1]) : null,
+    emiOnly,
     creditOnly: isCredit && !isDebit,
     debitOnly: isDebit && !isCredit,
     raw: text.replace(/\s+/g, ' ').trim().slice(0, 140),
@@ -79,6 +90,7 @@ function parseOffer(text) {
  */
 function offerValue(offer, amount) {
   if (!offer || !amount || amount <= 0) return 0;
+  if (offer.minSpend && amount < offer.minSpend) return 0; // min-spend pura nahi hua → offer nahi milega
   if (offer.kind === 'percent' && offer.percent) {
     let v = amount * (offer.percent / 100);
     if (offer.cap) v = Math.min(v, offer.cap);
@@ -97,7 +109,7 @@ function bestOffersByBank(texts, amount) {
   const byBank = {};
   for (const t of texts || []) {
     const o = parseOffer(t);
-    if (!o || o.debitOnly) continue;
+    if (!o || o.debitOnly || o.emiOnly) continue; // debit-only + EMI-only credit recommender ke liye skip
     const v = offerValue(o, amount);
     if (!byBank[o.bank] || v > byBank[o.bank].value) byBank[o.bank] = { offer: o, value: v };
   }

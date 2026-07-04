@@ -437,7 +437,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v14'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v15'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -599,6 +599,7 @@ async function evaluateAndRender() {
     dbg('wallet last4 entries (' + walletL4.length + '):', walletL4.slice(0, 15).join(', ') || 'KOI NAHI — isliye generic rows match nahi ho sakte');
 
     const claimed = new Set();
+    const bwLogged = new Set(); // bank-wide log ek baar per bank (190 cards pe spam na ho)
     // Card-selection page? (native ya Flipkart-jaisa custom radio, ya card-title rows). Aise
     // page par page-wide "bank-wide" fallback BAND — warna ek card ka ₹3000 dusre card pe leak
     // ho jata hai (Flipkart Axis pe ICICI ka ₹3000 phantom). Har card ka apna row-offer/page-actual hi sach.
@@ -618,7 +619,10 @@ async function evaluateAndRender() {
         const m = offersByBank[r.bank];
         if (m && m.value > 0) {
           off = m.value;
-          dbg('offer via bank-wide (page offer):', r.bank, '→ ₹' + off, '|', String((m.offer && m.offer.raw) || '').slice(0, 60));
+          if (!bwLogged.has(r.bank)) {
+            bwLogged.add(r.bank);
+            dbg('offer via bank-wide (page offer):', r.bank, '→ ₹' + off, '|', String((m.offer && m.offer.raw) || '').slice(0, 60));
+          }
         }
       }
       r.offerValue = off > 0 ? Math.min(off, amount || off) : 0;
