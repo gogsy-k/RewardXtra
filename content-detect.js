@@ -433,13 +433,63 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v10'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v11'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
   const D = (typeof globalThis !== 'undefined') && globalThis.CardWizDebug;
   if (D && D.cwlog) return D.cwlog(tag, ...args);
   try { console.log('[CardWiz] [' + tag + ']', ...args); } catch (_) { /* noop */ }
+}
+
+// ── SELECTED card ke EXACT numbers page-summary se (authoritative, estimate se behtar) ──
+// "-₹2,000" / "₹1,609" jaise amount nikaalo (currency required).
+function amtNear(text) {
+  const m = String(text || '').replace(/\s+/g, ' ').match(/(?:₹|rs\.?|inr)\s*([\d,]+(?:\.\d{1,2})?)/i);
+  return m ? parseFloat(m[1].replace(/,/g, '')) : 0;
+}
+
+// Summary me se ek labelled line ka amount ("Bank Offer Discount -₹2,000" -> 2000).
+function readSummaryLine(labelRe) {
+  const nodes = document.querySelectorAll('div, span, td, p, li, strong, b, dt, dd');
+  for (const n of nodes) {
+    if (n.children.length > 4) continue;
+    const t = (n.textContent || '').replace(/\s+/g, ' ').trim();
+    if (t.length > 90 || !labelRe.test(t)) continue;
+    const v = amtNear(t)
+      || amtNear(n.nextElementSibling && n.nextElementSibling.textContent)
+      || amtNear(n.parentElement && n.parentElement.textContent);
+    if (v > 0) return v;
+  }
+  return 0;
+}
+
+// Currently-selected payment card (checked radio) ka context — bank + last4 (single-bank).
+function selectedCardInfo() {
+  const radios = document.querySelectorAll('input[type="radio"]');
+  for (const r of radios) {
+    if (!(r.checked || r.getAttribute('aria-checked') === 'true')) continue;
+    let el = r;
+    for (let i = 0; i < 9 && el.parentElement; i++) {
+      el = el.parentElement;
+      const raw = (el.textContent || '').replace(/\s+/g, ' ');
+      if (raw.length > 500) break;
+      const t = raw.toLowerCase();
+      if (BANK_NAME_RE.test(t) && ctxLast4s(t).length && distinctBanks(t).size === 1) {
+        return { ctx: t, bank: (raw.match(BANK_NAME_RE) || [])[0], last4: ctxLast4s(t)[0] || '' };
+      }
+    }
+  }
+  return null;
+}
+
+// Kya owned card `r` selected-card ke ctx se match karta hai? (last4+bank ya naam+bank)
+function cardMatchesCtx(name, bank, last4List, ctx) {
+  if (!bankMatchesCtx(bank, ctx)) return false;
+  for (const l4 of (last4List || [])) if (l4 && ctxLast4s(ctx).includes(l4)) return true;
+  const tokens = String(name).toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/)
+    .filter((t) => t.length > 2 && !OFFER_GENERIC_WORDS.has(t));
+  return tokens.length > 0 && tokens.every((t) => ctx.includes(t));
 }
 
 let lastSkipMsg = ''; // skip-reason ek hi baar log ho (spam nahi)
@@ -513,6 +563,29 @@ async function evaluateAndRender() {
       r.offerValue = off > 0 ? Math.min(off, amount || off) : 0;
       r.total = r.savings + r.offerValue;
     });
+
+    // ── SELECTED card: page ke summary ka EXACT offer + cashback use karo (estimate override) ──
+    const sel = selectedCardInfo();
+    if (sel) {
+      const sumOffer = readSummaryLine(/(bank offer discount|instant bank discount)/i);
+      const sumCash = readSummaryLine(/bank cashback/i);
+      if (sumOffer > 0 || sumCash > 0) {
+        const selCard = ownedRanked.find((r) => {
+          const l4s = (myCards || []).filter((c) => c.cardId === r.id)
+            .map((c) => String(c.last4 || '').replace(/\D/g, '')).filter((s) => s.length === 4);
+          return cardMatchesCtx(r.name, r.bank, l4s, sel.ctx);
+        });
+        if (selCard) {
+          if (sumOffer > 0) selCard.offerValue = Math.min(sumOffer, amount || sumOffer);
+          if (sumCash > 0) { selCard.savings = sumCash; selCard.capped = false; selCard.capExhausted = false; }
+          selCard.total = selCard.savings + selCard.offerValue;
+          dbg('SELECTED card page-actuals:', selCard.name, '| ' + sel.bank + ' ' + sel.last4,
+            '| offer ₹' + selCard.offerValue + ' | cashback ₹' + sumCash);
+        } else {
+          dbg('SELECTED card (' + sel.bank + ' ' + sel.last4 + ') owned me match nahi — override skip');
+        }
+      }
+    }
     ownedRanked.sort((a, b) => (b.total - a.total) || (b.rate - a.rate));
     // Har render ka top-5 (reward + offer breakdown) — ranking flicker pakadne ke liye.
     dbg('top5:', ownedRanked.slice(0, 5).map((r) => `${r.name} = ₹${money(r.savings)} + off₹${money(r.offerValue)}`));
