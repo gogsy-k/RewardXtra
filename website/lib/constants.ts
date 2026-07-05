@@ -1,17 +1,17 @@
 /*
  * Site-wide constants — single source of truth.
  *
- * CHROME WEB STORE: extension abhi publish nahi hui. Jab listing live ho jaye:
- *   1. EXTENSION_PUBLISHED → true
- *   2. CHROME_STORE_URL mein real <extension-id> daal do
- * Tab tak saari "Add to Chrome" buttons launch-notify (mailto) pe jaati hain —
- * koi dead/generic store-homepage link nahi.
+ * CHROME WEB STORE: submitted for review (item id cfjgbjaaooalbpmmijiodfippkdpfbpn).
+ * The real store URL is already set below. GO LIVE the moment it's approved by
+ * flipping ONE line:  EXTENSION_PUBLISHED → true  (then commit + push).
+ * Until then all "Add to Chrome" buttons go to the launch-notify (mailto) — no
+ * dead store link.
  */
 export const EXTENSION_PUBLISHED = false;
 
-// ⚠️ Publish hone ke baad <EXTENSION-ID> replace karo.
+// Real store URL (item-id path redirects to the canonical slug URL once live).
 export const CHROME_STORE_URL =
-  "https://chromewebstore.google.com/detail/cardwiz/EXTENSION_ID_HERE";
+  "https://chromewebstore.google.com/detail/cfjgbjaaooalbpmmijiodfippkdpfbpn";
 
 export const NOTIFY_EMAIL = "gurpreetsj8871@gmail.com";
 

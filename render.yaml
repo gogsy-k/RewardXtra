@@ -36,7 +36,11 @@ services:
         sync: false
       - key: RAZORPAY_WEBHOOK_SECRET
         sync: false
-      - key: ALLOWED_EXTENSION_IDS # published extension ID(s), comma-separated
+      - key: ANTHROPIC_API_KEY     # CardWiz AI (Claude) — bina iske /ai 503 deta hai
+        sync: false
+      - key: RESEND_API_KEY        # launch/notify + account emails
+        sync: false
+      - key: ALLOWED_EXTENSION_IDS # published extension ID(s), comma-separated (e.g. cfjgbjaaooalbpmmijiodfippkdpfbpn)
         sync: false
       - key: BASE_URL              # deploy ke baad apna Render URL, jaise https://cardwiz-backend.onrender.com
         sync: false
