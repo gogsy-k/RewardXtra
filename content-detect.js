@@ -485,7 +485,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v29'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v30'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -838,10 +838,10 @@ function renderMinChip() {
   shadow.innerHTML = `
     <style>
       :host { all: initial; }
-      .chip { width:46px; height:46px; border-radius:50%; background:#171717; color:#F5F5F5;
-              border:1px solid #2A2A2A; box-shadow:0 6px 20px rgba(0,0,0,.4); cursor:pointer;
+      .chip { width:46px; height:46px; border-radius:50%; background:#0C1018; color:#E8ECF4;
+              border:1px solid #2A3450; box-shadow:0 6px 20px rgba(0,0,0,.4); cursor:pointer;
               display:flex; align-items:center; justify-content:center; font-size:20px; }
-      .chip:hover { border-color:#21F1A8; }
+      .chip:hover { border-color:#6366F1; }
     </style>
     <button class="chip" title="CardWiz kholo">💳</button>`;
   shadow.querySelector('.chip').addEventListener('click', () => {
@@ -897,7 +897,6 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
     }
     let applyHtml = '';
     if (apply && window.CardWizAffiliate && window.CardWizAffiliate.cardApplyUrl) {
-      // Apply button SIRF earning cards pe (INRDeals CPA link ho to); baaki pe null → no button.
       const url = window.CardWizAffiliate.cardApplyUrl(r.bank, r.id);
       if (url) applyHtml = `<a class="apply" data-url="${escapeHtml(url)}">${T('cw_apply')}</a>`;
     }
@@ -942,58 +941,58 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
       @keyframes cwSlideIn { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
       .box {
         font-family: 'Segoe UI', system-ui, sans-serif;
-        width: 280px; background: #171717; color: #F5F5F5;
-        border: 1px solid #2A2A2A; border-radius: 14px; padding: 14px;
+        width: 280px; background: #0C1018; color: #E8ECF4;
+        border: 1px solid #2A3450; border-radius: 14px; padding: 14px;
         box-shadow: 0 8px 30px rgba(0,0,0,.45);
         animation: cwSlideIn .26s cubic-bezier(.16, 1, .3, 1) both;
       }
       .hd { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-      .title { font-size:13px; font-weight:700; color:#21F1A8; }
-      .x { cursor:pointer; color:#A0A0A0; font-size:14px; line-height:1; background:none; border:none; padding:2px 4px; }
+      .title { font-size:13px; font-weight:700; color:#6366F1; }
+      .x { cursor:pointer; color:#8A93AC; font-size:14px; line-height:1; background:none; border:none; padding:2px 4px; }
       .x:hover { color:#FB7185; }
-      .headline { font-size:11px; color:#CFCFCF; margin-bottom:8px; }
+      .headline { font-size:11px; color:#B7C0D4; margin-bottom:8px; }
       .cwlist { max-height:264px; overflow-y:auto; margin:0 -2px; padding:0 2px; }
       .cwlist::-webkit-scrollbar { width:6px; }
-      .cwlist::-webkit-scrollbar-thumb { background:#2A2A2A; border-radius:3px; }
+      .cwlist::-webkit-scrollbar-thumb { background:#2A3450; border-radius:3px; }
       .cwlist::-webkit-scrollbar-track { background:transparent; }
       .row { display:flex; justify-content:space-between; align-items:center;
-             background:#242424; border:1px solid #2A2A2A; border-radius:8px;
+             background:#222C42; border:1px solid #2A3450; border-radius:8px;
              padding:8px 10px; margin-bottom:6px; gap:8px; }
-      .row.best { border-color:#21F1A8; background:#0F2B20; }
+      .row.best { border-color:#34D399; background:#123528; }
       .row.exhausted { border-color:#FB7185; opacity:.85; }
       .cleft { display:flex; flex-direction:column; min-width:0; }
       .cname { font-size:11px; font-weight:600; }
-      .csub { font-size:9px; color:#A0A0A0; margin-top:2px; }
+      .csub { font-size:9px; color:#8A93AC; margin-top:2px; }
       .csave { display:flex; flex-direction:column; align-items:flex-end; gap:5px; white-space:nowrap; flex-shrink:0; }
       .csave .rewardrow { display:flex; align-items:center; gap:6px; }
-      .csave .reward { font-size:14px; font-weight:800; color:#21F1A8; line-height:1; }
-      .csave .offer { font-size:11px; font-weight:800; color:#171717; background:#1BD48F;
+      .csave .reward { font-size:14px; font-weight:800; color:#34D399; line-height:1; }
+      .csave .offer { font-size:11px; font-weight:800; color:#0C1018; background:#818CF8;
                       padding:2px 7px; border-radius:5px; line-height:1.3; }
-      .csave .capnote { font-size:8px; background:#FBBF24; color:#171717; padding:2px 7px; border-radius:4px; font-weight:700; line-height:1.3; }
+      .csave .capnote { font-size:8px; background:#FBBF24; color:#0C1018; padding:2px 7px; border-radius:4px; font-weight:700; line-height:1.3; }
       .csave .capnote.khatam { background:#FB7185; }
       .csave .pill { font-size:8px; padding:2px 7px; border-radius:4px; font-weight:700; letter-spacing:.2px; line-height:1.3; }
-      .tag-cash { background:#21F1A8; color:#171717; }
-      .tag-pts  { background:#1BD48F; color:#171717; }
-      .tag-miles { background:#FBBF24; color:#171717; }
-      .whydiff { font-size:8px; font-weight:700; color:#21F1A8; margin-top:2px; display:block; }
-      .offers { font-size:9px; color:#1BD48F; margin-top:2px; line-height:1.4; }
+      .tag-cash { background:#34D399; color:#0C1018; }
+      .tag-pts  { background:#818CF8; color:#0C1018; }
+      .tag-miles { background:#FBBF24; color:#0C1018; }
+      .whydiff { font-size:8px; font-weight:700; color:#34D399; margin-top:2px; display:block; }
+      .offers { font-size:9px; color:#818CF8; margin-top:2px; line-height:1.4; }
       .buy {
-        width:100%; margin-top:8px; background:#FBBF24; color:#171717; border:none;
+        width:100%; margin-top:8px; background:#FBBF24; color:#0C1018; border:none;
         border-radius:8px; padding:8px; font-size:11px; font-weight:700; cursor:pointer;
       }
       .buy:hover { background:#FCD34D; }
-      .disc { font-size:8px; color:#A0A0A0; margin-top:3px; line-height:1.4; }
-      .ft { font-size:9px; color:#A0A0A0; margin-top:6px; line-height:1.4; }
-      .ft b { color:#CFCFCF; }
+      .disc { font-size:8px; color:#8A93AC; margin-top:3px; line-height:1.4; }
+      .ft { font-size:9px; color:#8A93AC; margin-top:6px; line-height:1.4; }
+      .ft b { color:#B7C0D4; }
       .csave .reward, .csave .offer, .whydiff, .pill { font-variant-numeric: tabular-nums; }
-      .tabs { display:flex; gap:4px; margin-bottom:8px; background:#1F1F1F; border:1px solid #2A2A2A; border-radius:9px; padding:3px; }
-      .tab { flex:1; background:none; border:none; color:#A0A0A0; font-size:10px; font-weight:700; padding:6px 4px; border-radius:6px; cursor:pointer; font-family:inherit; }
-      .tab.active { background:#21F1A8; color:#171717; }
+      .tabs { display:flex; gap:4px; margin-bottom:8px; background:#161C2D; border:1px solid #2A3450; border-radius:9px; padding:3px; }
+      .tab { flex:1; background:none; border:none; color:#8A93AC; font-size:10px; font-weight:700; padding:6px 4px; border-radius:6px; cursor:pointer; font-family:inherit; }
+      .tab.active { background:#6366F1; color:#fff; }
       .reward.blurred { filter:blur(5px); -webkit-filter:blur(5px); user-select:none; }
-      .apply { display:inline-block; margin-top:5px; background:#21F1A8; color:#171717; font-size:9px; font-weight:700; padding:3px 9px; border-radius:5px; cursor:pointer; text-decoration:none; }
-      .apply:hover { background:#1BD48F; }
-      .upgrade { width:100%; margin-bottom:8px; background:linear-gradient(90deg,#21F1A8,#1BD48F); color:#171717; border:none; border-radius:8px; padding:8px; font-size:10px; font-weight:800; cursor:pointer; font-family:inherit; }
-      .cwempty { font-size:10px; color:#A0A0A0; text-align:center; padding:18px 8px; }
+      .apply { display:inline-block; margin-top:5px; background:#6366F1; color:#fff; font-size:9px; font-weight:700; padding:3px 9px; border-radius:5px; cursor:pointer; text-decoration:none; }
+      .apply:hover { background:#818CF8; }
+      .upgrade { width:100%; margin-bottom:8px; background:linear-gradient(90deg,#6366F1,#818CF8); color:#fff; border:none; border-radius:8px; padding:8px; font-size:10px; font-weight:800; cursor:pointer; font-family:inherit; }
+      .cwempty { font-size:10px; color:#8A93AC; text-align:center; padding:18px 8px; }
       @media (prefers-reduced-motion: reduce) { .box { animation: none !important; } }
     </style>
     <div class="box">

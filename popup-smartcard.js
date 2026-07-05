@@ -518,11 +518,11 @@ function renderWatchlistChips(keywords) {
   const chips = $('watchlistChips');
   if (!chips) return;
   if (!keywords.length) {
-    chips.innerHTML = `<span style="font-size:10px;color:#A0A0A0;">${CardWizI18n.t('watchlist_empty')}</span>`;
+    chips.innerHTML = `<span style="font-size:10px;color:#8A93AC;">${CardWizI18n.t('watchlist_empty')}</span>`;
     return;
   }
   chips.innerHTML = keywords.map((kw) =>
-    `<span style="display:inline-flex;align-items:center;gap:4px;background:#242424;border:1px solid #2A2A2A;border-radius:20px;padding:3px 8px;font-size:10px;color:#F5F5F5;">
+    `<span style="display:inline-flex;align-items:center;gap:4px;background:#222C42;border:1px solid #2A3450;border-radius:20px;padding:3px 8px;font-size:10px;color:#E8ECF4;">
       ${escapeHtml(kw)}
       <button data-kw="${escapeHtml(kw)}" style="background:none;border:none;color:#FB7185;cursor:pointer;font-size:11px;padding:0;line-height:1;" class="wl-remove">×</button>
     </span>`
@@ -770,22 +770,22 @@ function buildPortfolioScoreWidget() {
 function fmtINR(n) { return Number(n).toLocaleString('en-IN'); }
 
 function bankAccentColor(bank) {
-  if (!bank) return '#21F1A8';
+  if (!bank) return '#6366F1';
   const b = bank.toLowerCase();
   if (b.includes('hdfc'))    return '#FBBF24';
-  if (b.includes('sbi'))     return '#1BD48F';
-  if (b.includes('axis'))    return '#21F1A8';
+  if (b.includes('sbi'))     return '#818CF8';
+  if (b.includes('axis'))    return '#6366F1';
   if (b.includes('icici'))   return '#fab387';
   if (b.includes('kotak'))   return '#FBBF24';
   if (b.includes('indusind'))return '#FB7185';
-  if (b.includes('yes'))     return '#1BD48F';
-  if (b.includes('idfc'))    return '#1BD48F';
-  if (b.includes('au ') || b === 'au') return '#1BD48F';
+  if (b.includes('yes'))     return '#818CF8';
+  if (b.includes('idfc'))    return '#818CF8';
+  if (b.includes('au ') || b === 'au') return '#818CF8';
   if (b.includes('hsbc'))    return '#FB7185';
-  if (b.includes('amex') || b.includes('american express')) return '#21F1A8';
-  if (b.includes('standard chartered')) return '#21F1A8';
+  if (b.includes('amex') || b.includes('american express')) return '#34D399';
+  if (b.includes('standard chartered')) return '#34D399';
   if (b.includes('rbl'))     return '#fab387';
-  return '#21F1A8';
+  return '#6366F1';
 }
 
 function bankCardGradient(bank) {
@@ -910,7 +910,7 @@ function makeCardDetail(mc, cat) {
     const wbPctClass = pct >= 100 ? 'tracker-pct full' : pct === 0 ? 'tracker-pct zero' : 'tracker-pct';
     block.innerHTML =
       `<div class="tracker-label">🎁 Welcome Bonus Tracker</div>` +
-      `<div class="tracker-subtext" style="font-weight:800;color:#F5F5F5;font-size:12px">${escapeHtml(wb.rewardText)}</div>` +
+      `<div class="tracker-subtext" style="font-weight:800;color:#E8ECF4;font-size:12px">${escapeHtml(wb.rewardText)}</div>` +
       `<div class="tracker-subtext">Worth <strong>₹${fmtINR(wb.estimatedValue)}</strong> · Spend <strong>₹${fmtINR(target)}</strong> in ${periodDays} days</div>` +
       statusHtml +
       `<div class="tracker-bar-row"><div class="tracker-bar"><div class="tracker-fill" style="width:${pct}%"></div></div><span class="${wbPctClass}">${pct}%</span></div>` +
