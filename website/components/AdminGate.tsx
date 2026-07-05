@@ -10,7 +10,7 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="h-9 w-9 animate-spin rounded-full border-4 border-border border-t-brand" />
+        <div className="h-9 w-9 animate-spin rounded-full border-4 border-border border-t-accent" />
       </div>
     );
   }

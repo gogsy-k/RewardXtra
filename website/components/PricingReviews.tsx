@@ -50,7 +50,7 @@ export default function PricingReviews() {
             <Link
               key={r.id}
               href={`/cards/${r.cardId}`}
-              className="block rounded-2xl border border-border bg-surface2 p-5 transition-colors hover:border-brand"
+              className="block rounded-2xl border border-border bg-surface2 p-5 transition-colors hover:border-accent"
             >
               <div className="flex items-center gap-2">
                 {r.userPicture ? (
@@ -63,7 +63,7 @@ export default function PricingReviews() {
                 )}
                 <span className="truncate text-sm font-semibold">{r.userName || "Anonymous"}</span>
                 {(r.userPlan === "premium" || r.userPlan === "pro") && (
-                  <span className="ml-auto rounded-full bg-brand/15 px-2 py-0.5 text-[10px] font-bold text-brand">
+                  <span className="ml-auto rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-bold text-accent">
                     ✨ {r.userPlan === "pro" ? "Pro" : "Premium"}
                   </span>
                 )}
@@ -73,7 +73,7 @@ export default function PricingReviews() {
               </div>
               {r.title && <div className="mt-1.5 text-sm font-bold">{r.title}</div>}
               {r.body && <p className="mt-1 line-clamp-3 text-sm leading-relaxed text-muted">{r.body}</p>}
-              <span className="mt-3 inline-block text-xs font-semibold text-brand">{t("pr_view")}</span>
+              <span className="mt-3 inline-block text-xs font-semibold text-accent">{t("pr_view")}</span>
             </Link>
           ))}
         </div>

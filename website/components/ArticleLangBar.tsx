@@ -44,7 +44,7 @@ export default function ArticleLangBar({
           href={`/news/${t.slug}`}
           hrefLang={HREFLANG[t.lang]}
           onClick={() => setLang(t.lang)}
-          className="font-bold text-brand hover:underline"
+          className="font-bold text-accent hover:underline"
         >
           {LANG_LABEL[t.lang]}
         </Link>

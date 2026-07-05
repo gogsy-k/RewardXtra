@@ -15,10 +15,10 @@ export default function AIChatButton() {
       <Link
         href="/ai"
         title="CardWiz AI — card ke baare mein kuch bhi pucho"
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-brand shadow-lg transition-transform hover:scale-105"
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-accent shadow-lg transition-transform hover:scale-105"
         aria-label="Open AI chat"
       >
-        <Bot className="h-7 w-7 text-onbrand" strokeWidth={2.5} />
+        <Bot className="h-7 w-7 text-onaccent" strokeWidth={2.5} />
       </Link>
     </motion.div>
   );

@@ -180,7 +180,7 @@ export default async function CardDetail(props: PageProps<"/cards/[id]">) {
               <Link
                 key={c.id}
                 href={`/cards/${c.id}`}
-                className="rounded-xl border border-border bg-surface2 p-4 transition-colors hover:border-brand"
+                className="rounded-xl border border-border bg-surface2 p-4 transition-colors hover:border-accent"
               >
                 <div className="text-sm font-bold">{c.name}</div>
                 <div className="mt-2 text-green">{topRate(c)}% top reward</div>

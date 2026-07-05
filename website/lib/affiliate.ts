@@ -85,12 +85,11 @@ const BANK_APPLY_AFFILIATE: Record<string, string> = {
   "Yes Bank": inr("https://applyonline.getpopcard.co/", "cpl"), // only Yes CPA (POP co-brand)
 };
 
-// Apply URL for a card. Priority: card-specific affiliate → bank-level affiliate → direct bank
-// page (no commission). Pass cardId for card-specific matches (co-brands / distinct campaigns).
+// Apply URL for a card — ONLY when we actually EARN (an INRDeals CPA link exists).
+// Card-specific affiliate → bank-level affiliate → null. No non-earning fallback: cards without
+// a paying link show NO Apply button (don't send users to a free bank page for zero commission).
 export function cardApplyUrl(bank: string, cardId?: string): string | null {
   if (cardId && CARD_APPLY_AFFILIATE[cardId]) return CARD_APPLY_AFFILIATE[cardId];
   if (BANK_APPLY_AFFILIATE[bank]) return BANK_APPLY_AFFILIATE[bank];
-  const dest = BANK_APPLY[bank];
-  if (!dest) return null;
-  return LINK_WRAP_BASE ? LINK_WRAP_BASE + encodeURIComponent(dest) : dest;
+  return null;
 }

@@ -56,10 +56,10 @@ export default function ScorecardShare({
   }
 
   return (
-    <div className="rounded-2xl border border-brand/30 bg-brand/5 p-5">
+    <div className="rounded-2xl border border-accent/30 bg-accent/5 p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="text-xs font-bold uppercase tracking-wide text-brand">Savings Scorecard</div>
+          <div className="text-xs font-bold uppercase tracking-wide text-accent">Savings Scorecard</div>
           <div className="mt-1 text-lg font-black">
             {period}:{" "}
             <span className="text-green-400">₹{Math.round(earned).toLocaleString("en-IN")} earned</span>

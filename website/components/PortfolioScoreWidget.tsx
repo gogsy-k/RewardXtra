@@ -129,7 +129,7 @@ export default function PortfolioScoreWidget({ isPremium }: { isPremium: boolean
               ))}
             </div>
           ) : (
-            <div className="rounded-xl border border-brand/25 bg-brand/5 p-4 text-center">
+            <div className="rounded-xl border border-accent/25 bg-accent/5 p-4 text-center">
               <div className="text-sm font-bold mb-1">
                 {t("ps_gaps_found", { n: gaps.length })}
               </div>

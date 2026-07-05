@@ -57,35 +57,40 @@ function inrdealsLink(url, username) {
   return `https://inrdeals.com/${username}/${url}`;
 }
 
-// Official credit-card application pages per bank — for the "Apply" button on cards
-// the user does not own yet. (Mirrors website lib/affiliate.ts BANK_APPLY.)
-const BANK_APPLY = {
-  'HDFC': 'https://www.hdfcbank.com/personal/pay/cards/credit-cards',
-  'Axis': 'https://www.axisbank.com/retail/cards/credit-card',
-  'SBI': 'https://www.sbicard.com/en/personal/credit-cards.page',
-  'ICICI': 'https://www.icicibank.com/personal-banking/cards/credit-card',
-  'Kotak': 'https://www.kotak.com/en/personal-banking/cards/credit-cards.html',
-  'RBL': 'https://www.rblbank.com/category/credit-cards',
-  'IndusInd': 'https://www.indusind.com/in/en/personal/cards/credit-card.html',
-  'AU Small Finance Bank': 'https://www.aubank.in/credit-cards',
-  'IDFC FIRST': 'https://www.idfcfirstbank.com/credit-card',
-  'Federal Bank': 'https://www.federalbank.co.in/credit-card',
-  'Yes Bank': 'https://www.yesbank.com/personal-banking/yes-individual/cards/credit-cards',
-  'HSBC': 'https://www.hsbc.co.in/credit-cards/',
-  'Standard Chartered': 'https://www.sc.com/in/credit-cards/',
-  'American Express': 'https://www.americanexpress.com/en-in/credit-cards/',
-  'DBS Bank': 'https://www.dbs.com/in/personal/cards/default.page',
-  'Bank of Baroda': 'https://www.bobcard.co.in/',
+// INRDeals CPA apply links (publisher gur478927530) — the ONLY banks/cards we actually EARN on.
+// Cards NOT listed here show NO "Apply" button (koi free bank-page fallback nahi — jahan paisa
+// nahi milta wahan Apply dikhane ka fayda nahi). Mirrors website lib/affiliate.ts. (2026-07-05)
+const INR_PUB = 'gur478927530';
+function inrApply(url, campaign) {
+  return 'https://inr.deals/redirect?id=' + INR_PUB + '&src=cardwiz&url=' + url + '&campaign=' + campaign;
+}
+
+// Card-specific (override bank-level) — keyed by catalog card id.
+const CARD_APPLY_AFFILIATE = {
+  'sbi-simplyclick': inrApply('https://www.sbicard.com', 'cpa_lead'),
+  'sbi-cashback': inrApply('https://www.sbicard.com', 'cpa_cb'),
+  'scapia-federal': inrApply('https://apply.scapia.cards/', 'cpa'),
+  'jupiter-edge-csb': inrApply('https://web.jupiter.money/rupay-csb/web-ob/landing', 'cpa'),
+};
+// Bank-level — every card of the bank earns on apply.
+const BANK_APPLY_AFFILIATE = {
+  'HDFC': inrApply('https://applyonline.hdfcbank.com/cards/credit-cards.html', 'cpl'),
+  'Axis': inrApply('https://web.axis.bank.in/DigitalChannel/WebForm/', 'cpl'),
+  'SBI': inrApply('https://www.sbicard.com', 'cpa_lead'),
+  'AU Small Finance Bank': inrApply('https://cconboarding.aubank.in/auccself/#/landing', 'cpa'),
+  'Federal Bank': inrApply('https://creditcards.federalbank.co.in', 'cpa'),
+  'IDFC FIRST': inrApply('https://www.idfcfirstbank.com/credit-card/ntb-diy/apply', 'cpa'),
+  'IndusInd': inrApply('https://induseasycredit.indusind.bank.in/', 'cpa'),
+  'HSBC': inrApply('https://www.accountopening.hsbc.co.in/credit-cards/', 'cpa'),
+  'Bank of Baroda': inrApply('https://mycard.bobcard.tech/splash-screen', 'cpl'),
+  'Yes Bank': inrApply('https://applyonline.getpopcard.co/', 'cpl'), // only Yes CPA (POP co-brand)
 };
 
-// Apply URL for a card's bank (optionally INRDeals-wrapped), or null if unknown.
-function bankApplyUrl(bank, cfg) {
-  const dest = BANK_APPLY[bank];
-  if (!dest) return null;
-  const c = cfg || DEFAULT_AFFILIATE_CONFIG;
-  return (c.inrdeals && c.inrdeals.enabled && c.inrdeals.username)
-    ? inrdealsLink(dest, c.inrdeals.username)
-    : dest;
+// Apply URL for a card — ONLY when we EARN (INRDeals CPA link exists). Else null → no Apply button.
+function cardApplyUrl(bank, cardId) {
+  if (cardId && CARD_APPLY_AFFILIATE[cardId]) return CARD_APPLY_AFFILIATE[cardId];
+  if (BANK_APPLY_AFFILIATE[bank]) return BANK_APPLY_AFFILIATE[bank];
+  return null;
 }
 
 /**
@@ -116,6 +121,6 @@ function affiliateUrl(merchant, url, config) {
 
 // ---------- Exports (browser/worker/node) ----------
 // unique const naam — classic scripts shared global scope mein collide na ho.
-const affiliateApi = { DEFAULT_AFFILIATE_CONFIG, DISCLOSURE, affiliateUrl, amazonLink, flipkartLink, cuelinksLink, inrdealsLink, bankApplyUrl };
+const affiliateApi = { DEFAULT_AFFILIATE_CONFIG, DISCLOSURE, affiliateUrl, amazonLink, flipkartLink, cuelinksLink, inrdealsLink, cardApplyUrl, CARD_APPLY_AFFILIATE, BANK_APPLY_AFFILIATE };
 if (typeof module !== 'undefined' && module.exports) module.exports = affiliateApi;
 if (typeof globalThis !== 'undefined') globalThis.CardWizAffiliate = affiliateApi;

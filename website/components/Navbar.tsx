@@ -40,8 +40,8 @@ export default function Navbar() {
       <nav className="flex w-full items-center justify-between gap-4 px-5 py-3 sm:px-8">
         {/* Logo */}
         <Link href="/" className="flex shrink-0 items-center gap-1.5 text-lg font-black tracking-tight">
-          <CreditCard className="h-5 w-5 text-brand" strokeWidth={2.5} />
-          <span className="text-brand">CardWiz</span>
+          <CreditCard className="h-5 w-5 text-accent" strokeWidth={2.5} />
+          <span className="text-accent">CardWiz</span>
         </Link>
 
         {/* Desktop nav — segmented pill with a sliding active indicator */}
@@ -54,7 +54,7 @@ export default function Navbar() {
                 href={l.href}
                 aria-current={active ? "page" : undefined}
                 className={`relative rounded-full px-3.5 py-1.5 text-sm transition-colors ${
-                  active ? "font-bold text-brand" : "font-medium text-subtle hover:text-fg"
+                  active ? "font-bold text-accent" : "font-medium text-subtle hover:text-fg"
                 }`}
               >
                 {active && (
@@ -89,7 +89,7 @@ export default function Navbar() {
           <AuthButton />
           <button
             onClick={() => setOpen((v) => !v)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-subtle transition-colors hover:border-brand hover:text-fg"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-subtle transition-colors hover:border-accent hover:text-fg"
             aria-label="Menu"
             aria-expanded={open}
           >
@@ -108,7 +108,7 @@ export default function Navbar() {
               onClick={() => setOpen(false)}
               aria-current={isActive(l.href) ? "page" : undefined}
               className={`rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                isActive(l.href) ? "bg-surface font-bold text-brand" : "font-medium text-subtle hover:bg-surface hover:text-fg"
+                isActive(l.href) ? "bg-surface font-bold text-accent" : "font-medium text-subtle hover:bg-surface hover:text-fg"
               }`}
             >
               {t(l.key)}
@@ -120,7 +120,7 @@ export default function Navbar() {
               onClick={() => setOpen(false)}
               aria-current={isActive("/account") ? "page" : undefined}
               className={`rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                isActive("/account") ? "bg-surface font-bold text-brand" : "font-medium text-subtle hover:bg-surface hover:text-fg"
+                isActive("/account") ? "bg-surface font-bold text-accent" : "font-medium text-subtle hover:bg-surface hover:text-fg"
               }`}
             >
               {t("nav_account")}

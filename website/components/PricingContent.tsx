@@ -20,7 +20,7 @@ export default function PricingContent() {
           </span>
           <h1 className="mt-6 text-4xl font-black leading-tight sm:text-5xl">
             {t("pricing_h1_a")}{" "}
-            <span className="text-brand">{t("pricing_h1_accent")}</span>{" "}
+            <span className="text-accent">{t("pricing_h1_accent")}</span>{" "}
             {t("pricing_h1_b")}
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-subtle">

@@ -18,14 +18,14 @@ export function GET(req: Request) {
           display: "flex",
           flexDirection: "column",
           padding: "72px 80px",
-          background: "linear-gradient(135deg, #171717 0%, #1F1F1F 60%, #242424 100%)",
-          color: "#F5F5F5",
+          background: "linear-gradient(135deg, #0C1018 0%, #131A2B 60%, #1A2336 100%)",
+          color: "#E8ECF4",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ fontSize: 40 }}>💳</div>
-          <div style={{ fontSize: 34, fontWeight: 900, color: "#6366F1" }}>CardWiz</div>
-          <div style={{ fontSize: 24, color: "#A0A0A0" }}>· News</div>
+          <div style={{ fontSize: 34, fontWeight: 900, color: "#818CF8" }}>CardWiz</div>
+          <div style={{ fontSize: 24, color: "#8A93AC" }}>· News</div>
         </div>
 
         <div
@@ -34,7 +34,7 @@ export function GET(req: Request) {
             alignSelf: "flex-start",
             fontSize: 22,
             fontWeight: 700,
-            color: "#6366F1",
+            color: "#34D399",
             background: "rgba(52,211,153,0.12)",
             borderRadius: 999,
             padding: "8px 20px",
@@ -48,8 +48,8 @@ export function GET(req: Request) {
         </div>
 
         <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 24 }}>
-          <div style={{ color: "#CFCFCF" }}>India-first credit card guides</div>
-          <div style={{ color: "#6366F1", fontWeight: 700 }}>cardwiz.in</div>
+          <div style={{ color: "#B7C0D4" }}>India-first credit card guides</div>
+          <div style={{ color: "#818CF8", fontWeight: 700 }}>cardwiz.in</div>
         </div>
       </div>
     ),

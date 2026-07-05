@@ -485,7 +485,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v27'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v28'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -896,8 +896,9 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
       else subtitle = endingPart;
     }
     let applyHtml = '';
-    if (apply && window.CardWizAffiliate) {
-      const url = window.CardWizAffiliate.bankApplyUrl(r.bank);
+    if (apply && window.CardWizAffiliate && window.CardWizAffiliate.cardApplyUrl) {
+      // Apply button SIRF earning cards pe (INRDeals CPA link ho to); baaki pe null → no button.
+      const url = window.CardWizAffiliate.cardApplyUrl(r.bank, r.id);
       if (url) applyHtml = `<a class="apply" data-url="${escapeHtml(url)}">${T('cw_apply')}</a>`;
     }
     return `<div class="row ${i === 0 ? 'best' : ''} ${r.capExhausted ? 'exhausted' : ''}">

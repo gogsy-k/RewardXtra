@@ -18,7 +18,7 @@ export default function Footer() {
     <footer className="mt-auto border-t border-border">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-7 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-subtle">
-          💳 <span className="font-bold text-brand">CardWiz</span> &nbsp;·&nbsp;{" "}
+          💳 <span className="font-bold text-accent">CardWiz</span> &nbsp;·&nbsp;{" "}
           {t("footer_tagline")}
         </div>
         <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">

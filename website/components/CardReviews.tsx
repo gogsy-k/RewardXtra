@@ -66,7 +66,7 @@ function ReviewCard({ review, onDelete }: { review: Review; onDelete?: () => voi
         )}
         <span className="text-sm font-semibold truncate">{review.userName || "Anonymous"}</span>
         {(review.userPlan === "premium" || review.userPlan === "pro") && (
-          <span className="rounded-full bg-brand/15 px-2 py-0.5 text-[10px] font-bold text-brand">
+          <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-bold text-accent">
             ✨ {review.userPlan === "pro" ? "Pro" : "Premium"}
           </span>
         )}
@@ -131,7 +131,7 @@ function WriteReviewForm({
       </div>
 
       <input
-        className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-brand"
+        className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
         placeholder={t("rev_title_ph")}
         value={title}
         maxLength={120}
@@ -139,7 +139,7 @@ function WriteReviewForm({
       />
 
       <textarea
-        className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-brand min-h-[80px] resize-y"
+        className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent min-h-[80px] resize-y"
         placeholder={t("rev_body_ph")}
         value={body}
         maxLength={1000}
@@ -221,7 +221,7 @@ export default function CardReviews({ cardId }: { cardId: string }) {
             <ReviewCard review={myReview} onDelete={handleDelete} />
             <button
               onClick={() => setShowForm(true)}
-              className="text-sm text-brand hover:underline"
+              className="text-sm text-accent hover:underline"
             >
               {t("rev_edit")}
             </button>
@@ -235,7 +235,7 @@ export default function CardReviews({ cardId }: { cardId: string }) {
         ) : null
       ) : (
         <p className="text-sm text-muted">
-          <Link href="/sign-in" className="text-brand hover:underline font-medium">{t("rev_signin")}</Link>
+          <Link href="/sign-in" className="text-accent hover:underline font-medium">{t("rev_signin")}</Link>
           {" "}{t("rev_signin_2")}
         </p>
       )}

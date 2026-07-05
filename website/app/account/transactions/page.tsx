@@ -83,7 +83,7 @@ function AddForm({
             value={date}
             max={today()}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
             required
           />
         </div>
@@ -98,7 +98,7 @@ function AddForm({
             step="0.01"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
             required
           />
         </div>
@@ -109,7 +109,7 @@ function AddForm({
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           >
             {CATEGORIES.map(([id, label]) => (
               <option key={id} value={id}>{label}</option>
@@ -128,7 +128,7 @@ function AddForm({
             maxLength={200}
             value={merchant}
             onChange={(e) => setMerchant(e.target.value)}
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
 
@@ -138,7 +138,7 @@ function AddForm({
           <select
             value={cardId}
             onChange={(e) => setCardId(e.target.value)}
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           >
             <option value="">{t("txn_notsure")}</option>
             {wallet.map((w) => (
@@ -279,7 +279,7 @@ export default function TransactionsPage() {
             {!isPremium && (
               <span className="ml-1">
                 {t("txn_free_used", { n: count, max: freeLimit })}{" "}
-                <Link href="/pricing" className="text-brand hover:underline">{t("txn_upgrade")}</Link>
+                <Link href="/pricing" className="text-accent hover:underline">{t("txn_upgrade")}</Link>
                 {" "}{t("txn_for_unlimited")}
               </span>
             )}
@@ -288,7 +288,7 @@ export default function TransactionsPage() {
         {canAdd && !showForm && (
           <div className="flex gap-2">
             {isPremium && (
-              <Link href="/account/upload" className="shrink-0 rounded-xl border border-border px-4 py-2 text-sm font-bold hover:border-brand">
+              <Link href="/account/upload" className="shrink-0 rounded-xl border border-border px-4 py-2 text-sm font-bold hover:border-accent">
                 {t("txn_upload_pdf")}
               </Link>
             )}
@@ -304,7 +304,7 @@ export default function TransactionsPage() {
 
       {/* Free limit wall */}
       {atFreeLimit && (
-        <div className="rounded-2xl border border-brand/30 bg-brand/5 p-6 text-center">
+        <div className="rounded-2xl border border-accent/30 bg-accent/5 p-6 text-center">
           <div className="text-3xl mb-2">💎</div>
           <div className="font-bold mb-1">{t("txn_wall_h")}</div>
           <p className="text-sm text-muted mb-5 max-w-sm mx-auto leading-relaxed">
@@ -338,7 +338,7 @@ export default function TransactionsPage() {
           {canAdd && (
             <button
               onClick={() => setShowForm(true)}
-              className="mt-4 text-sm text-brand hover:underline"
+              className="mt-4 text-sm text-accent hover:underline"
             >
               {t("txn_add_first")}
             </button>

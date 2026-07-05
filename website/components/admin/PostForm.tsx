@@ -8,7 +8,7 @@ import { cloudinaryEnabled, uploadImage } from "@/lib/cloudinary";
 import { type Post, type PostLang, LANG_LABEL } from "@/lib/posts";
 
 const inputCls =
-  "w-full rounded-xl border border-border bg-surface2 px-3.5 py-2.5 text-sm text-fg outline-none focus:border-brand";
+  "w-full rounded-xl border border-border bg-surface2 px-3.5 py-2.5 text-sm text-fg outline-none focus:border-accent";
 
 // ISO → value for <input type="datetime-local"> (local time, no seconds).
 function toLocalInput(iso?: string | null): string {
@@ -116,7 +116,7 @@ export default function PostForm({ post }: { post?: Post }) {
               placeholder="https://…"
             />
             {cloudinaryEnabled && (
-              <label className="shrink-0 cursor-pointer rounded-xl border border-border bg-surface px-3 py-2 text-xs font-semibold text-brand hover:border-brand">
+              <label className="shrink-0 cursor-pointer rounded-xl border border-border bg-surface px-3 py-2 text-xs font-semibold text-accent hover:border-accent">
                 {coverUploading ? "…" : "📤"}
                 <input type="file" accept="image/*" hidden onChange={onCoverFile} />
               </label>
@@ -165,7 +165,7 @@ export default function PostForm({ post }: { post?: Post }) {
         <p className="mt-1 text-[11px] text-muted">
           Empty = publish now. A future time schedules it — the article auto-goes-live then (no manual step).
           {publishAt && new Date(publishAt) > new Date() && (
-            <span className="ml-1 font-semibold text-brand">
+            <span className="ml-1 font-semibold text-accent">
               Scheduled for {new Date(publishAt).toLocaleString("en-IN")}.
             </span>
           )}

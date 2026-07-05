@@ -160,7 +160,7 @@ export default function CardQuiz() {
   if (phase === "calc") {
     return (
       <div className="mx-auto flex max-w-md flex-col items-center py-24 text-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-border border-t-brand" />
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-border border-t-accent" />
         <p className="mt-5 text-sm text-subtle">{t("quiz_calc")}</p>
       </div>
     );
@@ -190,7 +190,7 @@ export default function CardQuiz() {
         </div>
         <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface2">
           <div
-            className="h-full rounded-full bg-brand transition-all duration-300"
+            className="h-full rounded-full bg-accent transition-all duration-300"
             style={{ width: `${((step + 1) / total) * 100}%` }}
           />
         </div>
@@ -209,8 +209,8 @@ export default function CardQuiz() {
               onClick={() => choose(q.field, o.value)}
               className={`flex items-center gap-3 rounded-2xl border p-4 text-left transition-colors ${
                 selected
-                  ? "border-brand bg-surface2"
-                  : "border-border bg-surface2 hover:border-brand"
+                  ? "border-accent bg-surface2"
+                  : "border-border bg-surface2 hover:border-accent"
               }`}
             >
               <span className="text-2xl">{o.icon}</span>
@@ -245,7 +245,7 @@ function Results({
     return (
       <div className="mx-auto max-w-md py-20 text-center">
         <p className="text-lg font-bold">{t("quiz_empty")}</p>
-        <button onClick={onRestart} className="mt-6 text-sm font-semibold text-brand hover:underline">
+        <button onClick={onRestart} className="mt-6 text-sm font-semibold text-accent hover:underline">
           ↻ {t("quiz_retake")}
         </button>
       </div>
@@ -288,7 +288,7 @@ function Results({
       </div>
 
       <div className="mt-6 text-center">
-        <button onClick={onRestart} className="text-sm font-semibold text-brand hover:underline">
+        <button onClick={onRestart} className="text-sm font-semibold text-accent hover:underline">
           ↻ {t("quiz_retake")}
         </button>
       </div>
@@ -310,7 +310,7 @@ function RecCard({ rec, hero = false }: { rec: CardRec; hero?: boolean }) {
   return (
     <div
       className={`flex flex-col rounded-2xl border p-6 ${
-        hero ? "border-brand bg-surface2 shadow-2xl" : "border-border bg-surface2"
+        hero ? "border-accent bg-surface2 shadow-2xl" : "border-border bg-surface2"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -373,7 +373,7 @@ function RecCard({ rec, hero = false }: { rec: CardRec; hero?: boolean }) {
         </a>
         <Link
           href={`/cards/${c.id}`}
-          className="rounded-xl border border-border px-4 py-2.5 text-center text-sm font-semibold text-brand transition-colors hover:border-brand"
+          className="rounded-xl border border-border px-4 py-2.5 text-center text-sm font-semibold text-accent transition-colors hover:border-accent"
         >
           {t("quiz_details")}
         </Link>

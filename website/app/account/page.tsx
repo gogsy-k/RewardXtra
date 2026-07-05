@@ -53,7 +53,7 @@ function EmailPrefsToggle({ isPremium }: { isPremium: boolean }) {
         <div className="flex-1 min-w-0 opacity-60">
           <div className="text-sm font-bold flex items-center gap-2">
             {t("acc_email_t")}
-            <span className="rounded-full bg-brand/15 px-2 py-0.5 text-[10px] font-bold text-brand">{t("acc_email_premium")}</span>
+            <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-bold text-accent">{t("acc_email_premium")}</span>
           </div>
           <p className="text-xs text-muted mt-0.5">{t("acc_email_locked_d")}</p>
         </div>
@@ -76,7 +76,7 @@ function EmailPrefsToggle({ isPremium }: { isPremium: boolean }) {
         disabled={saving || !loaded}
         aria-label={enabled ? "Disable monthly email" : "Enable monthly email"}
         className={`shrink-0 relative h-6 w-11 rounded-full transition-colors focus:outline-none ${
-          enabled ? "bg-brand" : "bg-border"
+          enabled ? "bg-accent" : "bg-border"
         } disabled:opacity-50`}
       >
         <span
@@ -114,7 +114,7 @@ export default function AccountPage() {
             className="h-16 w-16 rounded-full"
           />
         ) : (
-          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand text-2xl font-black text-onbrand">
+          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-accent text-2xl font-black text-onaccent">
             {initial}
           </span>
         )}
@@ -125,7 +125,7 @@ export default function AccountPage() {
           <span
             className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-bold ${
               isPremium
-                ? "bg-brand text-onbrand"
+                ? "bg-accent text-onaccent"
                 : "border border-border text-subtle"
             }`}
           >
@@ -148,7 +148,7 @@ export default function AccountPage() {
 
       {/* ── Upgrade banner for free users ── */}
       {!isPremium && (
-        <div className="rounded-2xl border border-brand/30 bg-brand/5 p-6 text-center">
+        <div className="rounded-2xl border border-accent/30 bg-accent/5 p-6 text-center">
           <div className="mb-2 text-3xl">💎</div>
           <div className="mb-1 text-base font-bold">{t("acc_unlock_h")}</div>
           <p className="mx-auto mb-5 max-w-md text-sm text-muted leading-relaxed">
@@ -171,7 +171,7 @@ export default function AccountPage() {
             <a
               key={f.titleKey}
               href={f.href}
-              className="flex gap-3 rounded-xl border border-border bg-surface2 p-4 transition-colors hover:border-brand"
+              className="flex gap-3 rounded-xl border border-border bg-surface2 p-4 transition-colors hover:border-accent"
             >
               <span className="mt-0.5 text-2xl leading-none">{f.emoji}</span>
               <div className="min-w-0">

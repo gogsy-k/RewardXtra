@@ -101,8 +101,8 @@ export default function RewardsPage() {
       )}
 
       {/* Balance */}
-      <div className="rounded-2xl border border-brand/30 bg-gradient-to-br from-brand/10 to-surface2 p-6 text-center">
-        <div className="text-5xl font-black tabular-nums text-accent [text-shadow:0_0_24px_rgba(33,241,168,0.4)]">
+      <div className="rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/10 to-surface2 p-6 text-center">
+        <div className="text-5xl font-black tabular-nums text-accent [text-shadow:0_0_24px_rgba(99,102,241,0.4)]">
           {loading ? "…" : points.toLocaleString("en-IN")}
         </div>
         <div className="mt-1 text-xs font-bold uppercase tracking-wide text-subtle">{t("rw_points")}</div>
@@ -145,7 +145,7 @@ export default function RewardsPage() {
                 <div key={opt.id} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface2 p-4">
                   <div className="min-w-0">
                     <div className="text-sm font-bold">{t("rw_redeem_days", { n: opt.days })}</div>
-                    <div className="text-xs font-semibold tabular-nums text-brand">{opt.cost.toLocaleString("en-IN")} pts</div>
+                    <div className="text-xs font-semibold tabular-nums text-accent">{opt.cost.toLocaleString("en-IN")} pts</div>
                   </div>
                   <button
                     onClick={() => doRedeem(opt)}
@@ -192,11 +192,11 @@ export default function RewardsPage() {
               {lb.top.map((row, i) => {
                 const isMe = row.id === lb.me.id;
                 return (
-                  <div key={row.id} className={`flex items-center gap-3 px-4 py-2.5 ${isMe ? "bg-brand/10" : ""}`}>
-                    <span className={`w-6 shrink-0 text-center text-sm font-black tabular-nums ${i < 3 ? "text-brand" : "text-muted"}`}>
+                  <div key={row.id} className={`flex items-center gap-3 px-4 py-2.5 ${isMe ? "bg-accent/10" : ""}`}>
+                    <span className={`w-6 shrink-0 text-center text-sm font-black tabular-nums ${i < 3 ? "text-accent" : "text-muted"}`}>
                       {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
                     </span>
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand/20 text-xs font-bold text-brand">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent/20 text-xs font-bold text-accent">
                       {row.picture ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={row.picture} alt="" width={28} height={28} referrerPolicy="no-referrer" className="h-7 w-7 rounded-full" />
@@ -206,9 +206,9 @@ export default function RewardsPage() {
                     </span>
                     <span className="min-w-0 flex-1 truncate text-sm font-semibold">
                       {row.name}
-                      {isMe && <span className="ml-1.5 rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-bold text-onbrand">{t("rw_lb_you")}</span>}
+                      {isMe && <span className="ml-1.5 rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-onaccent">{t("rw_lb_you")}</span>}
                     </span>
-                    <span className="shrink-0 text-sm font-black tabular-nums text-brand">{row.earned.toLocaleString("en-IN")}</span>
+                    <span className="shrink-0 text-sm font-black tabular-nums text-accent">{row.earned.toLocaleString("en-IN")}</span>
                   </div>
                 );
               })}
@@ -228,7 +228,7 @@ export default function RewardsPage() {
             <Link
               key={e.reason}
               href={e.href}
-              className="flex items-center gap-3 rounded-xl border border-border bg-surface2 p-4 transition-colors hover:border-brand"
+              className="flex items-center gap-3 rounded-xl border border-border bg-surface2 p-4 transition-colors hover:border-accent"
             >
               <span className="text-2xl">{e.icon}</span>
               <span className="flex-1 text-sm font-semibold">{t(e.key)}</span>

@@ -78,7 +78,7 @@ export default function PricingPlans() {
             {period === p && (
               <motion.span
                 layoutId="pricing-pill"
-                className="absolute inset-0 rounded-full bg-brand"
+                className="absolute inset-0 rounded-full bg-accent"
                 transition={{ type: "spring", stiffness: 380, damping: 32 }}
               />
             )}
@@ -106,7 +106,7 @@ export default function PricingPlans() {
             <div
               className={`relative flex h-full flex-col rounded-2xl border p-7 ${
                 plan.highlighted
-                  ? "border-brand bg-surface2 shadow-2xl lg:-mt-3 lg:mb-3"
+                  ? "border-accent bg-surface2 shadow-2xl lg:-mt-3 lg:mb-3"
                   : "border-border bg-surface2"
               }`}
             >
@@ -116,13 +116,13 @@ export default function PricingPlans() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.2 + i * 0.08, type: "spring", stiffness: 400, damping: 20 }}
-                  className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand px-3 py-1 text-xs font-bold text-onbrand"
+                  className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-1 text-xs font-bold text-onaccent"
                 >
                   {plan.badge}
                 </motion.span>
               )}
 
-              <h3 className="text-lg font-extrabold text-brand">{plan.name}</h3>
+              <h3 className="text-lg font-extrabold text-accent">{plan.name}</h3>
               <p className="mt-1 text-sm text-muted">{t(`plan_tag_${plan.id}`)}</p>
 
               {/* Price (rolls on Monthly↔Yearly toggle) */}
@@ -175,7 +175,7 @@ export default function PricingPlans() {
           type="button"
           onClick={() => setShowMatrix((v) => !v)}
           aria-expanded={showMatrix}
-          className="rounded-xl border border-border px-5 py-2.5 text-sm font-bold text-brand transition-colors hover:border-brand"
+          className="rounded-xl border border-border px-5 py-2.5 text-sm font-bold text-accent transition-colors hover:border-accent"
         >
           {showMatrix ? t("pp_compare_hide") : t("pp_compare_show")}
         </button>
@@ -188,7 +188,7 @@ export default function PricingPlans() {
               <tr className="border-b border-border bg-surface2">
                 <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-muted">{t("pm_feature")}</th>
                 <th className="px-4 py-3 text-center text-sm font-black">Free</th>
-                <th className="px-4 py-3 text-center text-sm font-black text-brand">Premium</th>
+                <th className="px-4 py-3 text-center text-sm font-black text-accent">Premium</th>
                 <th className="px-4 py-3 text-center text-sm font-black">Pro</th>
               </tr>
             </thead>

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 export default function Contact() {
   return (
     <div className="mx-auto max-w-3xl px-5 py-12">
-      <h1 className="text-3xl font-extrabold text-brand">Contact Us</h1>
+      <h1 className="text-3xl font-extrabold text-accent">Contact Us</h1>
       <p className="mt-1 text-sm text-subtle">We&apos;d love to hear from you</p>
 
       <p className="mt-6 leading-relaxed text-subtle">

@@ -23,7 +23,7 @@ function CardChip({ card }: { card: TopCard }) {
   return (
     <Link
       href={`/cards/${card.id}`}
-      className="inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand/5 px-3 py-1 text-xs font-semibold text-brand hover:bg-brand/15 transition-colors"
+      className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/5 px-3 py-1 text-xs font-semibold text-accent hover:bg-accent/15 transition-colors"
     >
       💳 {card.name}
     </Link>
@@ -35,15 +35,15 @@ function Bubble({ msg }: { msg: Msg }) {
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"} gap-3`}>
       {!isUser && (
-        <div className="shrink-0 mt-1 h-8 w-8 rounded-full bg-brand/20 flex items-center justify-center">
-          <Bot className="h-4 w-4 text-brand" strokeWidth={2.5} />
+        <div className="shrink-0 mt-1 h-8 w-8 rounded-full bg-accent/20 flex items-center justify-center">
+          <Bot className="h-4 w-4 text-accent" strokeWidth={2.5} />
         </div>
       )}
       <div className={`max-w-[82%] space-y-2 flex flex-col ${isUser ? "items-end" : "items-start"}`}>
         <div
           className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
             isUser
-              ? "bg-brand text-onbrand rounded-br-sm"
+              ? "bg-accent text-onaccent rounded-br-sm"
               : msg.error
               ? "bg-red-400/10 text-red-400 border border-red-400/20 rounded-bl-sm"
               : "bg-surface2 border border-border rounded-bl-sm"
@@ -136,8 +136,8 @@ export default function AiPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black flex items-center gap-2">
-            <Bot className="h-6 w-6 text-brand" strokeWidth={2.5} /> CardWiz AI
-            <span className="text-xs font-bold rounded-full bg-brand/15 text-brand px-2 py-0.5">Beta</span>
+            <Bot className="h-6 w-6 text-accent" strokeWidth={2.5} /> CardWiz AI
+            <span className="text-xs font-bold rounded-full bg-accent/15 text-accent px-2 py-0.5">Beta</span>
           </h1>
           <p className="text-sm text-subtle mt-0.5">{t("ai_sub")}</p>
         </div>
@@ -160,7 +160,7 @@ export default function AiPage() {
                 <button
                   onClick={() => send(prompt)}
                   disabled={loading}
-                  className="w-full text-left rounded-xl border border-border bg-surface2 px-4 py-3 text-sm hover:border-brand transition-colors disabled:opacity-50"
+                  className="w-full text-left rounded-xl border border-border bg-surface2 px-4 py-3 text-sm hover:border-accent transition-colors disabled:opacity-50"
                 >
                   {prompt}
                 </button>
@@ -168,7 +168,7 @@ export default function AiPage() {
             );
           })}
           {!user && (
-            <div className="rounded-xl border border-brand/30 bg-brand/5 p-4 text-center text-sm mt-4">
+            <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 text-center text-sm mt-4">
               <div className="font-bold mb-1">{t("ai_signin_h")}</div>
               <p className="text-xs text-subtle mb-3">{t("ai_signin_p")}</p>
               <Link href="/sign-in" className="inline-block rounded-lg bg-accent px-4 py-2 text-xs font-bold text-onaccent">
@@ -185,12 +185,12 @@ export default function AiPage() {
           {messages.map((msg, i) => <Bubble key={i} msg={msg} />)}
           {loading && (
             <div className="flex gap-3">
-              <div className="h-8 w-8 rounded-full bg-brand/20 flex items-center justify-center shrink-0"><Bot className="h-4 w-4 text-brand" strokeWidth={2.5} /></div>
+              <div className="h-8 w-8 rounded-full bg-accent/20 flex items-center justify-center shrink-0"><Bot className="h-4 w-4 text-accent" strokeWidth={2.5} /></div>
               <div className="rounded-2xl rounded-bl-sm border border-border bg-bg px-4 py-3">
                 <div className="flex gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-brand animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="h-2 w-2 rounded-full bg-brand animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="h-2 w-2 rounded-full bg-brand animate-bounce" style={{ animationDelay: "300ms" }} />
+                  <span className="h-2 w-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="h-2 w-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="h-2 w-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
                 {slowHint && (
                   <p className="mt-2 text-xs text-subtle">{t("ai_slow")}</p>
@@ -203,7 +203,7 @@ export default function AiPage() {
             <div className="flex justify-center">
               <button
                 onClick={() => send(lastQuery)}
-                className="rounded-lg border border-border px-4 py-1.5 text-xs font-bold text-brand transition-colors hover:border-brand"
+                className="rounded-lg border border-border px-4 py-1.5 text-xs font-bold text-accent transition-colors hover:border-accent"
               >
                 {t("ai_retry")}
               </button>
@@ -215,7 +215,7 @@ export default function AiPage() {
 
       {/* Rate limit upsell */}
       {rateLimited && !isPremium && (
-        <div className="rounded-xl border border-brand/30 bg-brand/5 p-4 text-center">
+        <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 text-center">
           <div className="font-bold mb-1">{t("ai_rl_h")}</div>
           <p className="text-xs text-subtle mb-3">{t("ai_rl_p")}</p>
           <Link href="/pricing" className="inline-block rounded-lg bg-accent px-5 py-2 text-xs font-bold text-onaccent">
@@ -242,7 +242,7 @@ export default function AiPage() {
           <button
             onClick={() => send(input)}
             disabled={loading || !input.trim() || rateLimited}
-            className="shrink-0 h-9 w-9 rounded-xl bg-brand flex items-center justify-center disabled:opacity-40 transition-opacity"
+            className="shrink-0 h-9 w-9 rounded-xl bg-accent flex items-center justify-center disabled:opacity-40 transition-opacity"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-onaccent rotate-90">
               <line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" />

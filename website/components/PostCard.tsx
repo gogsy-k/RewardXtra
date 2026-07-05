@@ -5,7 +5,7 @@ export default function PostCard({ post }: { post: Post }) {
   return (
     <Link
       href={`/news/${post.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-surface2 transition-colors hover:border-brand"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-surface2 transition-colors hover:border-accent"
     >
       <div className="aspect-[16/9] overflow-hidden bg-surface">
         {post.coverImage ? (
@@ -33,7 +33,7 @@ export default function PostCard({ post }: { post: Post }) {
             </span>
           )}
         </div>
-        <h3 className="font-bold leading-snug group-hover:text-brand">{post.title}</h3>
+        <h3 className="font-bold leading-snug group-hover:text-accent">{post.title}</h3>
         {post.excerpt && <p className="mt-1.5 line-clamp-2 text-sm text-muted">{post.excerpt}</p>}
         <div className="mt-3 text-[11px] text-muted">
           {post.authorName && <>{post.authorName} · </>}

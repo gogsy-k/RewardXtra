@@ -138,8 +138,8 @@ export default function SavingsPage() {
             onClick={() => setPeriodIdx(i)}
             className={`rounded-full px-4 py-1.5 text-xs font-bold transition-colors ${
               i === periodIdx
-                ? "bg-brand text-onbrand"
-                : "border border-border text-muted hover:border-brand hover:text-text"
+                ? "bg-accent text-onaccent"
+                : "border border-border text-muted hover:border-accent hover:text-text"
             }`}
           >
             {t(p.labelKey)}
@@ -242,7 +242,7 @@ export default function SavingsPage() {
 
           {/* Premium gate overlay for free users */}
           {blurDetails && report.missed > 0 && (
-            <div className="relative rounded-2xl border border-brand/30 bg-brand/5 p-6 text-center">
+            <div className="relative rounded-2xl border border-accent/30 bg-accent/5 p-6 text-center">
               <div className="text-4xl mb-2">💎</div>
               <div className="font-bold text-lg mb-1">
                 {t("sav_gate_h", { amt: fmtINR(report.missed) })}
@@ -336,7 +336,7 @@ export default function SavingsPage() {
               </div>
               <Link
                 href="/account/transactions"
-                className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-bold hover:border-brand hover:text-brand"
+                className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-bold hover:border-accent hover:text-accent"
               >
                 {t("sav_add")}
               </Link>
