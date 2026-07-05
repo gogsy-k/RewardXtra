@@ -65,13 +65,21 @@ export default function Privacy() {
         affiliate networks ke saath share nahi karte.
       </p>
 
-      <h2>7. Data delete</h2>
+      <h2>7. Bank logos</h2>
+      <p>
+        Card ke saath bank ka logo dikhane ke liye hum us bank ka favicon <b>Google ki favicon
+        service</b> (kuch cases mein Icon Horse) se load karte hain — us service ko sirf bank ka
+        <i>domain</i> dikhta hai, aur koi personal jaankari nahi. Logo na mile to bank ke initials
+        (monogram) dikha dete hain.
+      </p>
+
+      <h2>8. Data delete</h2>
       <p>
         Extension uninstall karte hi local data delete ho jaata hai. Account/data deletion ke liye{" "}
         <a href="mailto:gurpreetsj8871@gmail.com">humein likho</a>.
       </p>
 
-      <h2>8. Contact</h2>
+      <h2>9. Contact</h2>
       <p>
         Sawaal ho to: <a href="mailto:gurpreetsj8871@gmail.com">gurpreetsj8871@gmail.com</a>
       </p>
