@@ -32,6 +32,38 @@ const BANK_PAY_URLS = {
   'American Express': 'https://www.americanexpress.com/in/account-management/login/',
 };
 
+// Bank / card-brand logos. Each URL was verified to return a REAL logo (Google
+// favicon service or Icon Horse), not a generic globe. Banks/brands whose sites
+// block every logo service are absent -> initial-letter fallback (see makeCardRow).
+// NOTE: external image requests (google.com / icon.horse) from the popup.
+function gf(d) { return 'https://www.google.com/s2/favicons?domain=' + d + '&sz=64'; }
+function ih(d) { return 'https://icon.horse/icon/' + d; }
+const BANK_LOGO = {
+  'HDFC': gf('hdfcbank.com'), 'ICICI': gf('icicibank.com'), 'SBI': gf('sbicard.com'),
+  'Axis': gf('axisbank.com'), 'Kotak': gf('kotak.com'), 'IDFC FIRST': gf('idfcfirstbank.com'),
+  'IndusInd': gf('indusind.com'), 'Yes Bank': gf('yesbank.in'), 'RBL': gf('rblbank.com'),
+  'AU Small Finance Bank': gf('aubank.in'), 'HSBC': gf('hsbc.co.in'),
+  'American Express': gf('americanexpress.com'), 'Standard Chartered': gf('sc.com'),
+  'Citi': gf('citibank.com'), 'DBS Bank': gf('dbs.com'), 'Bank of Baroda': gf('bankofbaroda.in'),
+  'Bank of India': gf('bankofindia.co.in'), 'Canara Bank': gf('canarabank.com'),
+  'UCO Bank': gf('ucobank.com'), 'Airtel Payments Bank': gf('airtel.in'),
+  'City Union Bank': gf('cityunionbank.com'), 'South Indian Bank': gf('southindianbank.com'),
+  'Tamilnad Mercantile Bank': gf('tmb.in'),
+  'Federal Bank': ih('federalbank.co.in'), 'Central Bank of India': ih('centralbankofindia.co.in'),
+  'Indian Bank': ih('indianbank.in'), 'SBM Bank India': ih('sbmbank.co.in'),
+};
+// Fintech co-brands by keyword in the card name (issuing bank differs). First match wins.
+const BRAND_LOGO = [
+  [/\bslice\b/i, ih('sliceit.com')], [/\bkiwi\b/i, gf('gokiwi.in')],
+  [/\bfi money\b/i, gf('fi.money')], [/\bjupiter\b/i, gf('jupiter.money')],
+  [/\bscapia\b/i, gf('scapia.cards')], [/\bixigo\b/i, gf('ixigo.com')],
+  [/\badani\b/i, gf('adanione.com')],
+];
+function cardLogoUrl(name, bank) {
+  for (const [re, url] of BRAND_LOGO) if (re.test(name || '')) return url;
+  return BANK_LOGO[bank] || null;
+}
+
 const $ = (id) => document.getElementById(id);
 const els = {
   category: $('category'), amount: $('amount'), goBtn: $('goBtn'),
@@ -1103,8 +1135,22 @@ function makeCardRow(mc, cat) {
 
   const iconCircle = document.createElement('div');
   iconCircle.className = 'mycard-icon-circle';
-  iconCircle.style.background = `linear-gradient(145deg, ${accent}cc, ${accent}88)`;
-  iconCircle.textContent = (cat.bank || '?')[0].toUpperCase();
+  const bankInitial = (cat.bank || '?')[0].toUpperCase();
+  const gradientBg = `linear-gradient(145deg, ${accent}cc, ${accent}88)`;
+  const logoUrl = cardLogoUrl(cat.name, cat.bank);
+  if (logoUrl) {
+    // Show the bank favicon on a light chip; on load error fall back to the initial.
+    iconCircle.style.background = '#fff';
+    const img = document.createElement('img');
+    img.src = logoUrl;
+    img.alt = '';
+    img.style.cssText = 'width:22px;height:22px;object-fit:contain;display:block;border-radius:4px';
+    img.onerror = () => { iconCircle.textContent = bankInitial; iconCircle.style.background = gradientBg; };
+    iconCircle.appendChild(img);
+  } else {
+    iconCircle.style.background = gradientBg;
+    iconCircle.textContent = bankInitial;
+  }
 
   const info = document.createElement('div');
   info.className = 'mycard-info';

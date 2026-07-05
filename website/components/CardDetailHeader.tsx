@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import CountUp from "@/components/motion/CountUp";
+import BankLogo from "@/components/BankLogo";
 
 type Stat = { value: string; label: string; countTo?: number; suffix?: string };
 
@@ -35,7 +36,8 @@ export default function CardDetailHeader({
       initial={reduce ? "show" : "hidden"}
       animate="show"
     >
-      <motion.div variants={item} className="flex flex-wrap items-center gap-2">
+      <motion.div variants={item} className="flex flex-wrap items-center gap-2.5">
+        <BankLogo bank={bank} name={name} size={40} />
         <span className="rounded-md bg-accent px-2.5 py-1 text-[11px] font-bold uppercase text-onaccent">
           {cardType}
         </span>

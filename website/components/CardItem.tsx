@@ -3,19 +3,13 @@
 import Link from "next/link";
 import { Card, topRate, formatFee, TYPE_LABEL, cardCategories, prettyCategory } from "@/lib/cards";
 import { useLang } from "@/contexts/LangContext";
+import BankLogo from "@/components/BankLogo";
 
 const TYPE_BADGE: Record<Card["type"], string> = {
   cashback: "bg-green text-bg",
   points: "bg-blue text-bg",
   miles: "bg-yellow text-bg",
 };
-
-// Bank monogram (no fake logos): 1 word → first 2 letters; multi-word → initials of first 2 words.
-function monogram(bank: string): string {
-  const words = bank.trim().split(/\s+/);
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return (words[0][0] + words[1][0]).toUpperCase();
-}
 
 // "Best for" = category from this card's highest-rate rule.
 function bestForCategory(card: Card): string | null {
@@ -43,10 +37,8 @@ export default function CardItem({ card }: { card: Card }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2.5">
-          {/* Bank monogram chip */}
-          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-[11px] font-black text-accent">
-            {monogram(card.bank)}
-          </span>
+          {/* Bank / brand logo chip (favicon; monogram fallback) */}
+          <BankLogo bank={card.bank} name={card.name} size={36} className="mt-0.5" />
           <div className="min-w-0">
             <div className="text-xs font-semibold uppercase tracking-wide text-muted">
               {card.bank} · {card.network}
