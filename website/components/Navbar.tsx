@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import { CreditCard, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import BrandMark from "@/components/BrandMark";
 import { useLang } from "@/contexts/LangContext";
 import { useAuth } from "@/contexts/AuthContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -39,8 +40,8 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b border-border/70 bg-bg/70 backdrop-blur-xl">
       <nav className="flex w-full items-center justify-between gap-4 px-5 py-3 sm:px-8">
         {/* Logo */}
-        <Link href="/" className="flex shrink-0 items-center gap-1.5 text-lg font-black tracking-tight">
-          <CreditCard className="h-5 w-5 text-accent" strokeWidth={2.5} />
+        <Link href="/" className="flex shrink-0 items-center gap-2 text-lg font-black tracking-tight">
+          <BrandMark className="h-6 w-6" size={24} />
           <span className="text-accent">CardWiz</span>
         </Link>
 

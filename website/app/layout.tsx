@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
@@ -90,6 +90,11 @@ export const metadata: Metadata = {
   },
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
+};
+
+// Address-bar / PWA chrome color — matches the dark site background.
+export const viewport: Viewport = {
+  themeColor: "#0C1018",
 };
 
 export default function RootLayout({
