@@ -74,10 +74,16 @@ async function init() {
   await loadWaiverSpend();
   await loadBenefitsUsed();
   await loadPremium();
-  await loadAuth(); // Phase 8: signed-in user + plan sync (backend)
-  await loadSyncPref(); // Phase 10: cloud sync pref (default ON)
-  if (currentUser && syncEnabled) await doSyncNow(); // pull+merge+push cards
-  if (currentUser && !isPremium) await autoVerifyPayment(); // Phase 11: pending payment auto-detect
+  // Network/auth/sync/payment — fail-soft. A backend hiccup here must NOT blank
+  // the popup or block the first-run guide (guide fires after the renders below).
+  try {
+    await loadAuth(); // Phase 8: signed-in user + plan sync (backend)
+    await loadSyncPref(); // Phase 10: cloud sync pref (default ON)
+    if (currentUser && syncEnabled) await doSyncNow(); // pull+merge+push cards
+    if (currentUser && !isPremium) await autoVerifyPayment(); // Phase 11: pending payment auto-detect
+  } catch (e) {
+    if (typeof CardWizDebug !== 'undefined') CardWizDebug.cwlog('popup', 'init network step failed (non-fatal):', e && e.message);
+  }
   if (typeof CardWizDebug !== 'undefined') {
     const withL4 = myCards.filter((c) => String(c.last4 || '').replace(/\D/g, '').length === 4).length;
     CardWizDebug.cwlog('popup', 'boot | cards:', myCards.length, '| with-last4:', withL4,
@@ -154,7 +160,7 @@ async function init() {
     els.formLast4.value = els.formLast4.value.replace(/\D/g, '').slice(0, 4);
   });
 
-  // First-run guide — wire listeners, then show it on the very first open.
+  // Data is loaded + rendered by now — safe to show the first-run guide.
   wireOnboard();
   maybeShowOnboard();
 }
@@ -1635,11 +1641,15 @@ function setLanguage(code) {
 // user learns by seeing where things are. Shown once (chrome.storage flag);
 // header "?" replays it. Fully i18n'd.
 const ONBOARD_FLAG = 'cwOnboardedV1';
+// Ship behaviour = false: guide auto-shows once (first open), then never again
+// automatically — only via the header "?". Set true only to force it every
+// open while developing.
+const ONBOARD_ALWAYS = false;
 const ONBOARD_STEPS = [
-  { sel: 'nav button[data-view="best"]',    t: 'ob_s1_t', d: 'ob_s1_d' },
-  { sel: 'nav button[data-view="mycards"]', t: 'ob_s2_t', d: 'ob_s2_d' },
-  { sel: 'nav button[data-view="suggest"]', t: 'ob_s3_t', d: 'ob_s3_d' },
-  { sel: 'nav button[data-view="more"]',    t: 'ob_s4_t', d: 'ob_s4_d' },
+  { view: 'best',    sel: 'nav button[data-view="best"]',    t: 'ob_s1_t', d: 'ob_s1_d' },
+  { view: 'mycards', sel: 'nav button[data-view="mycards"]', t: 'ob_s2_t', d: 'ob_s2_d' },
+  { view: 'suggest', sel: 'nav button[data-view="suggest"]', t: 'ob_s3_t', d: 'ob_s3_d' },
+  { view: 'more',    sel: 'nav button[data-view="more"]',    t: 'ob_s4_t', d: 'ob_s4_d' },
 ];
 let onbStep = 0;
 
@@ -1684,6 +1694,8 @@ function renderOnboard() {
   const total = ONBOARD_STEPS.length;
   onbStep = Math.max(0, Math.min(onbStep, total - 1));
   const step = ONBOARD_STEPS[onbStep];
+  // Switch to the tab this step is about, so its content shows behind the guide.
+  if (step.view && typeof switchView === 'function') switchView(step.view);
   $('onbTitle').textContent = T(step.t);
   $('onbDesc').textContent = T(step.d);
   $('onbSkip').textContent = T('ob_skip');
@@ -1711,9 +1723,11 @@ function openOnboard() {
 }
 
 // Close + remember (so it never auto-shows again). Replay via the header "?".
+// Always land back on the first tab (Top Cards), since the tour moved through tabs.
 function closeOnboard() {
   const overlay = $('onboard');
   if (overlay) overlay.hidden = true;
+  if (typeof switchView === 'function') switchView('best');
   if (typeof chrome !== 'undefined' && chrome.storage) chrome.storage.local.set({ [ONBOARD_FLAG]: true });
 }
 
@@ -1728,6 +1742,7 @@ function wireOnboard() {
 }
 
 function maybeShowOnboard() {
+  if (ONBOARD_ALWAYS) { openOnboard(); return; } // dev override: force every open
   if (typeof chrome === 'undefined' || !chrome.storage) return;
   chrome.storage.local.get([ONBOARD_FLAG], (r) => { if (!r[ONBOARD_FLAG]) openOnboard(); });
 }
