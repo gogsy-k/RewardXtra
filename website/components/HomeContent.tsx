@@ -81,7 +81,7 @@ export default function HomeContent({
           <div id="notify" className="cw-rise mt-9 flex flex-wrap items-start justify-center gap-3" style={{ animationDelay: "0.18s" }}>
             <Link
               href="/cards"
-              className="rounded-xl bg-accent px-6 py-3.5 text-sm font-bold text-onaccent transition-colors hover:bg-blue"
+              className="rounded-xl bg-accent px-6 py-3.5 text-sm font-bold text-onaccent transition-all duration-200 hover:bg-blue hover:scale-[1.03] active:scale-[0.97] hover:shadow-lg hover:shadow-accent/20 motion-reduce:transform-none"
             >
               {t("home_browse", { n: total })}
             </Link>
@@ -147,7 +147,7 @@ export default function HomeContent({
           {features.map((f, i) => {
             const Icon = f.Icon;
             return (
-            <Reveal key={f.title} delay={i * 0.05} className="h-full">
+            <Reveal key={f.title} delay={i * 0.05} scale={0.96} className="h-full">
               <div className="h-full rounded-2xl border border-border bg-surface2 p-6 transition-colors hover:border-border/80">
                 <Icon className="h-8 w-8 text-accent" strokeWidth={2} />
                 <h3 className="mt-3 font-bold">{f.title}</h3>

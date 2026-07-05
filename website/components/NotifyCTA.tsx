@@ -12,11 +12,12 @@ type State = "idle" | "loading" | "done" | "error";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function btnCls(variant: Variant) {
+  // Micro-interaction: subtle hover-lift + tap-press (Tailwind, no bundle cost, reduced-motion safe).
   const base =
-    "inline-block rounded-xl px-6 py-3.5 text-sm font-bold text-center transition-colors";
+    "inline-block rounded-xl px-6 py-3.5 text-sm font-bold text-center transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] motion-reduce:transform-none";
   return variant === "secondary"
     ? `${base} border border-border text-accent hover:border-accent`
-    : `${base} bg-accent text-onaccent hover:bg-blue`;
+    : `${base} bg-accent text-onaccent hover:bg-blue hover:shadow-lg hover:shadow-accent/20`;
 }
 
 export default function NotifyCTA({

@@ -46,7 +46,10 @@ export default function SavingsCalculator({ cards }: { cards: Card[] }) {
     <div className="mx-auto w-full max-w-sm rounded-2xl border border-border bg-surface2 p-5 text-left shadow-2xl">
       <div className="flex items-center justify-between">
         <span className="text-sm font-bold text-accent">{t("sc_h")}</span>
-        <span className="rounded-full bg-green/15 px-2 py-0.5 text-[10px] font-bold text-green">{t("sc_live")}</span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-green/15 px-2 py-0.5 text-[10px] font-bold text-green">
+          <span className="h-1.5 w-1.5 rounded-full bg-green animate-pulse motion-reduce:animate-none" />
+          {t("sc_live")}
+        </span>
       </div>
 
       {/* Platform chips */}

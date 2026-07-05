@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { Menu, X } from "lucide-react";
@@ -18,9 +18,18 @@ const NAV_CTA_HREF = EXTENSION_PUBLISHED ? CHROME_STORE_URL : "/#notify";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { t } = useLang();
   const { user } = useAuth();
   const pathname = usePathname();
+
+  // Subtle shrink + stronger backdrop once the page is scrolled a little.
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const links = [
     { href: "/", key: "nav_home" },
@@ -37,8 +46,16 @@ export default function Navbar() {
     href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/70 bg-bg/70 backdrop-blur-xl">
-      <nav className="flex w-full items-center justify-between gap-4 px-5 py-3 sm:px-8">
+    <header
+      className={`sticky top-0 z-50 border-b backdrop-blur-xl transition-colors duration-300 ${
+        scrolled ? "border-border/80 bg-bg/90 shadow-sm shadow-black/20" : "border-border/70 bg-bg/70"
+      }`}
+    >
+      <nav
+        className={`flex w-full items-center justify-between gap-4 px-5 sm:px-8 transition-[padding] duration-300 motion-reduce:transition-none ${
+          scrolled ? "py-2" : "py-3"
+        }`}
+      >
         {/* Logo */}
         <Link href="/" className="flex shrink-0 items-center gap-2 text-lg font-black tracking-tight">
           <BrandMark className="h-6 w-6" size={24} />
