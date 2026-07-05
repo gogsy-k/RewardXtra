@@ -23,8 +23,7 @@
   },
   "permissions": ["storage", "alarms", "notifications", "identity"],
   "host_permissions": [
-    "https://cardwiz-backend.onrender.com/*",
-    "http://localhost:3000/*"
+    "https://cardwiz-backend.onrender.com/*"
   ],
   "background": {
     "service_worker": "background.js"

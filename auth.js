@@ -16,9 +16,9 @@
 const GOOGLE_CLIENT_ID = '792822617409-42qs5ac2f1v4ud48rjek7a1cugbkgobb.apps.googleusercontent.com';
 
 // ⚠️ Backend ka base URL. Dev: localhost. Production: Render.
-// 🔧 TODO(PUBLISH): Chrome Web Store pe publish se pehle USE_LOCAL_BACKEND = false karo
+// PRODUCTION: real backend (Render). Local dev ke liye true karo
 // (catalog.js me bhi yehi toggle hai — dono same rakho).
-const USE_LOCAL_BACKEND = true;
+const USE_LOCAL_BACKEND = false;
 const BACKEND_URL = USE_LOCAL_BACKEND ? 'http://localhost:3000' : 'https://cardwiz-backend.onrender.com';
 
 const AUTH_STORAGE_KEY = 'scsAuth'; // { token, user }

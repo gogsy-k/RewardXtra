@@ -14,8 +14,8 @@
  */
 
 // ⚠️ auth.js wala hi BACKEND_URL yahan bhi daalo (same value).
-// 🔧 TODO(PUBLISH): publish se pehle false karo (auth.js ka USE_LOCAL_BACKEND bhi).
-const CATALOG_USE_LOCAL = true;
+// PRODUCTION: real backend (Render). Local dev ke liye true karo (auth.js ka USE_LOCAL_BACKEND bhi).
+const CATALOG_USE_LOCAL = false;
 const CATALOG_BACKEND_URL = CATALOG_USE_LOCAL ? 'http://localhost:3000' : 'https://cardwiz-backend.onrender.com';
 
 const CACHE_KEY     = 'rxCatalog_v2';   // v2 = cardType (credit/debit) wala schema
