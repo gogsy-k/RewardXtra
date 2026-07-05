@@ -1587,10 +1587,11 @@ function closeCardInfo() {
   document.body.style.overflow = '';
 }
 
-// ---------- CIBIL score checker (affiliate redirect) ----------
-// ⚠️ TODO: Replace with your Paisabazaar affiliate deep link once sign-up is done.
-//    Affiliate program: https://www.paisabazaar.com/affiliate
-const CIBIL_PARTNER_URL = 'https://www.paisabazaar.com/credit-score/';
+// ---------- Credit score checker (affiliate redirect — earns CPL per lead) ----------
+// INRDeals CPL deep link (publisher gur478927530) → CreditMantri (Equifax-based free score).
+// Free for the user; we earn per completed signup. Note: CreditMantri = Equifax, not CIBIL,
+// so the UI copy says "Credit Score" (generic), not "CIBIL".
+const CIBIL_PARTNER_URL = 'https://inr.deals/redirect?id=gur478927530&src=cardwiz&url=https://www.creditmantri.com/campaign/equifax/credit-score/&campaign=cpl';
 
 function openCibil() {
   window.open(CIBIL_PARTNER_URL, '_blank', 'noopener');
