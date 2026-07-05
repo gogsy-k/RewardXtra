@@ -21,3 +21,6 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Chrome Web Store build artifact (regenerated from source; don't commit)
+cardwiz-extension-*.zip
