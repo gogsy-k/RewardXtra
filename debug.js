@@ -9,7 +9,7 @@
  * 🔧 TODO(PUBLISH): publish se pehle CW_DEBUG_ALL = false karo.
  */
 
-const CW_DEBUG_ALL = true;
+const CW_DEBUG_ALL = false;
 const CW_LOG_T0 = Date.now();
 let CW_LOG_SEQ = 0;
 

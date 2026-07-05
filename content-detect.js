@@ -484,8 +484,8 @@ function money(n) {
 
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
-const CW_DEBUG = true;
-const CW_BUILD = 'l4-v31'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_DEBUG = false;
+const CW_BUILD = 'l4-v32'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';

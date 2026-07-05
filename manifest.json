@@ -4,7 +4,7 @@
   "version": "1.0",
   "description": "Checkout pe sabse zyada bachat dene wala card bataye + bill due-date reminders. Privacy-first, India-first. | cardwiz.in",
   "author": "CardWiz",
-  "homepage_url": "https://github.com/",
+  "homepage_url": "https://cardwiz.in",
   "action": {
     "default_popup": "popup-smartcard.html",
     "default_title": "CardWiz — best card batao",
