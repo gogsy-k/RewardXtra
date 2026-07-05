@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Bot } from "lucide-react";
 import { track } from "@vercel/analytics";
 import { sendChatMessage, type TopCard } from "@/lib/ai-api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,8 +34,8 @@ function Bubble({ msg }: { msg: Msg }) {
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"} gap-3`}>
       {!isUser && (
-        <div className="shrink-0 mt-1 h-8 w-8 rounded-full bg-accent/20 flex items-center justify-center">
-          <Bot className="h-4 w-4 text-accent" strokeWidth={2.5} />
+        <div className="shrink-0 mt-1 h-8 w-8 rounded-full bg-accent/20 flex items-center justify-center text-sm">
+          🤖
         </div>
       )}
       <div className={`max-w-[82%] space-y-2 flex flex-col ${isUser ? "items-end" : "items-start"}`}>
@@ -136,7 +135,7 @@ export default function AiPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black flex items-center gap-2">
-            <Bot className="h-6 w-6 text-accent" strokeWidth={2.5} /> CardWiz AI
+            🤖 CardWiz AI
             <span className="text-xs font-bold rounded-full bg-accent/15 text-accent px-2 py-0.5">Beta</span>
           </h1>
           <p className="text-sm text-subtle mt-0.5">{t("ai_sub")}</p>
@@ -185,7 +184,7 @@ export default function AiPage() {
           {messages.map((msg, i) => <Bubble key={i} msg={msg} />)}
           {loading && (
             <div className="flex gap-3">
-              <div className="h-8 w-8 rounded-full bg-accent/20 flex items-center justify-center shrink-0"><Bot className="h-4 w-4 text-accent" strokeWidth={2.5} /></div>
+              <div className="h-8 w-8 rounded-full bg-accent/20 flex items-center justify-center text-sm shrink-0">🤖</div>
               <div className="rounded-2xl rounded-bl-sm border border-border bg-bg px-4 py-3">
                 <div className="flex gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: "0ms" }} />

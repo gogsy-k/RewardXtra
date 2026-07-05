@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
-import { Bot } from "lucide-react";
 
 export default function AIChatButton() {
   const reduce = useReducedMotion();
@@ -18,7 +17,7 @@ export default function AIChatButton() {
         className="flex h-14 w-14 items-center justify-center rounded-full bg-accent shadow-lg transition-transform hover:scale-105"
         aria-label="Open AI chat"
       >
-        <Bot className="h-7 w-7 text-onaccent" strokeWidth={2.5} />
+        <span className="text-2xl">🤖</span>
       </Link>
     </motion.div>
   );
