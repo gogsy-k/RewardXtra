@@ -40,6 +40,19 @@ html {
   .price-pop { animation: none; }
 }
 
+/* Hero entrance — CSS-driven so content is visible on FIRST PAINT (runs off the
+   stylesheet in <head>, no wait for the JS bundle to hydrate). Base state has no
+   opacity override, so if the animation is ever skipped the content stays visible;
+   the keyframe only fades + slides it in. Stagger via inline animation-delay. */
+@keyframes cwRise {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+.cw-rise { animation: cwRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .cw-rise { animation: none; }
+}
+
 body {
   background: var(--color-bg);
   color: var(--color-fg);

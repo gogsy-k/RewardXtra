@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion } from "motion/react";
 import { useLang } from "@/contexts/LangContext";
 import QuizTeaser from "@/components/QuizTeaser";
 import PostCard from "@/components/PostCard";
@@ -15,12 +14,6 @@ import { ShoppingCart, CreditCard, Landmark, Bell, Lock, Star, Bot, Tag, Target,
 
 // Feature-grid icons — single-colour Lucide (green accent) instead of multicolour emoji.
 const FEAT_ICONS = [ShoppingCart, CreditCard, Landmark, Bell, Lock, Star];
-
-const heroContainer = { hidden: {}, show: { transition: { staggerChildren: 0.07, delayChildren: 0.04 } } };
-const heroItem = {
-  hidden: { opacity: 0, y: 10 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const } },
-};
 
 export default function HomeContent({
   total,
@@ -36,7 +29,6 @@ export default function HomeContent({
   calcCards?: Card[];
 }) {
   const { t, lang } = useLang();
-  const reduce = useReducedMotion();
   // One card per article in the selected language (dedupes translations).
   const newsPosts = pickPostsForLang(posts, lang).slice(0, 3);
 
@@ -75,23 +67,18 @@ export default function HomeContent({
       {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(ellipse_60%_60%_at_50%_0%,rgba(99,102,241,0.12),transparent_70%)]" />
-        <motion.div
-          className="mx-auto max-w-4xl px-5 pb-16 pt-20 text-center sm:pt-28"
-          variants={heroContainer}
-          initial={reduce ? "show" : "hidden"}
-          animate="show"
-        >
-          <motion.span variants={heroItem} className="inline-block rounded-full border border-border bg-surface px-4 py-1.5 text-xs font-semibold text-green">
+        <div className="mx-auto max-w-4xl px-5 pb-16 pt-20 text-center sm:pt-28">
+          <span className="cw-rise inline-block rounded-full border border-border bg-surface px-4 py-1.5 text-xs font-semibold text-green" style={{ animationDelay: "0.03s" }}>
             {t("home_badge")}
-          </motion.span>
-          <motion.h1 variants={heroItem} className="mt-6 text-4xl font-black leading-tight sm:text-5xl">
+          </span>
+          <h1 className="cw-rise mt-6 text-4xl font-black leading-tight sm:text-5xl" style={{ animationDelay: "0.08s" }}>
             {t("home_h1")}
-          </motion.h1>
-          <motion.p variants={heroItem} className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-subtle sm:text-lg">
+          </h1>
+          <p className="cw-rise mx-auto mt-5 max-w-xl text-base leading-relaxed text-subtle sm:text-lg" style={{ animationDelay: "0.13s" }}>
             {t("home_sub")}
-          </motion.p>
+          </p>
           {/* Primary = live value (Browse); notify is secondary. #notify wrapper kept for the anchor. */}
-          <motion.div variants={heroItem} id="notify" className="mt-9 flex flex-wrap items-start justify-center gap-3">
+          <div id="notify" className="cw-rise mt-9 flex flex-wrap items-start justify-center gap-3" style={{ animationDelay: "0.18s" }}>
             <Link
               href="/cards"
               className="rounded-xl bg-accent px-6 py-3.5 text-sm font-bold text-onaccent transition-colors hover:bg-blue"
@@ -99,15 +86,15 @@ export default function HomeContent({
               {t("home_browse", { n: total })}
             </Link>
             <NotifyCTA variant="secondary" />
-          </motion.div>
+          </div>
 
           {/* Interactive Savings Calculator — live proof, not a static mockup */}
           {calcCards.length > 0 && (
-            <motion.div variants={heroItem} className="mt-14">
+            <div className="cw-rise mt-14" style={{ animationDelay: "0.23s" }}>
               <SavingsCalculator cards={calcCards} />
-            </motion.div>
+            </div>
           )}
-        </motion.div>
+        </div>
       </section>
 
       {/* STATS */}
