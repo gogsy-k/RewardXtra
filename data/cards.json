@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "lastUpdated": "2026-06-14",
+  "lastUpdated": "2026-07-05",
   "currency": "INR",
   "categories": [
     "amazon",
@@ -6679,6 +6679,98 @@
       "exclusions": [],
       "fuelSurchargeWaiver": true,
       "lastVerified": "2026-06-14"
+    },
+    {
+      "id": "adani-one-icici",
+      "name": "Adani One ICICI Bank Signature Credit Card",
+      "bank": "ICICI",
+      "network": "Visa",
+      "cardType": "credit",
+      "type": "points",
+      "pointValueINR": 1,
+      "annualFee": 0,
+      "feeWaiverSpend": 0,
+      "baseRate": 1,
+      "baseMonthlyCapValue": null,
+      "rules": [
+        {
+          "categories": [
+            "travel",
+            "flights",
+            "hotels"
+          ],
+          "effectiveRate": 5,
+          "rawRate": "Adani Reward Points on Adani One app: flights, hotels & airport spends (verify exact rate/cap)",
+          "monthlyCapValue": null
+        },
+        {
+          "categories": [
+            "dining",
+            "grocery",
+            "utilities"
+          ],
+          "effectiveRate": 2,
+          "rawRate": "Reward points on dining, grocery & utilities (verify)",
+          "monthlyCapValue": null
+        }
+      ],
+      "exclusions": [
+        "rent",
+        "wallet",
+        "fuel",
+        "government"
+      ],
+      "fuelSurchargeWaiver": true,
+      "lastVerified": "2026-07-05"
+    },
+    {
+      "id": "ixigo-au",
+      "name": "ixigo AU Bank Credit Card",
+      "bank": "AU Small Finance Bank",
+      "network": "RuPay",
+      "cardType": "credit",
+      "type": "cashback",
+      "pointValueINR": 1,
+      "annualFee": 0,
+      "feeWaiverSpend": 0,
+      "baseRate": 1,
+      "baseMonthlyCapValue": null,
+      "rules": [
+        {
+          "categories": [
+            "travel",
+            "flights"
+          ],
+          "effectiveRate": 10,
+          "rawRate": "Up to 10% off on train/flight/bus bookings via ixigo (verify exact rate/cap)",
+          "monthlyCapValue": 1000
+        },
+        {
+          "categories": [
+            "dining",
+            "entertainment"
+          ],
+          "effectiveRate": 2,
+          "rawRate": "Rewards on dining & entertainment (verify)",
+          "monthlyCapValue": null
+        },
+        {
+          "categories": [
+            "upi"
+          ],
+          "effectiveRate": 1,
+          "rawRate": "RuPay UPI-linked rewards (verify)",
+          "monthlyCapValue": null
+        }
+      ],
+      "exclusions": [
+        "rent",
+        "wallet",
+        "fuel",
+        "government"
+      ],
+      "fuelSurchargeWaiver": true,
+      "lastVerified": "2026-07-05"
     }
   ]
 }
