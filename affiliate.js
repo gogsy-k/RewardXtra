@@ -86,11 +86,33 @@ const BANK_APPLY_AFFILIATE = {
   'Yes Bank': inrApply('https://applyonline.getpopcard.co/', 'cpl'), // only Yes CPA (POP co-brand)
 };
 
-// Apply URL for a card — ONLY when we EARN (INRDeals CPA link exists). Else null → no Apply button.
+// Generic bank apply pages (NO commission) — extension fallback for cards where we don't earn.
+// (Website hides Apply on non-earning; extension shows a generic link — user's choice.)
+const BANK_APPLY = {
+  'HDFC': 'https://www.hdfcbank.com/personal/pay/cards/credit-cards',
+  'Axis': 'https://www.axisbank.com/retail/cards/credit-card',
+  'SBI': 'https://www.sbicard.com/en/personal/credit-cards.page',
+  'ICICI': 'https://www.icicibank.com/personal-banking/cards/credit-card',
+  'Kotak': 'https://www.kotak.com/en/personal-banking/cards/credit-cards.html',
+  'RBL': 'https://www.rblbank.com/category/credit-cards',
+  'IndusInd': 'https://www.indusind.com/in/en/personal/cards/credit-card.html',
+  'AU Small Finance Bank': 'https://www.aubank.in/credit-cards',
+  'IDFC FIRST': 'https://www.idfcfirstbank.com/credit-card',
+  'Federal Bank': 'https://www.federalbank.co.in/credit-card',
+  'Yes Bank': 'https://www.yesbank.com/personal-banking/yes-individual/cards/credit-cards',
+  'HSBC': 'https://www.hsbc.co.in/credit-cards/',
+  'Standard Chartered': 'https://www.sc.com/in/credit-cards/',
+  'American Express': 'https://www.americanexpress.com/en-in/credit-cards/',
+  'DBS Bank': 'https://www.dbs.com/in/personal/cards/default.page',
+  'Bank of Baroda': 'https://www.bobcard.co.in/',
+};
+
+// Apply URL for a card. Priority: earning card-specific CPA → earning bank-level CPA →
+// GENERIC bank page (no commission) → null (unknown bank).
 function cardApplyUrl(bank, cardId) {
   if (cardId && CARD_APPLY_AFFILIATE[cardId]) return CARD_APPLY_AFFILIATE[cardId];
   if (BANK_APPLY_AFFILIATE[bank]) return BANK_APPLY_AFFILIATE[bank];
-  return null;
+  return BANK_APPLY[bank] || null;
 }
 
 /**
