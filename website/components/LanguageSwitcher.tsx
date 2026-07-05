@@ -22,7 +22,7 @@ export default function LanguageSwitcher({ compact = false }: { compact?: boolea
             title={l.label}
             className={`rounded-full px-2.5 py-1 text-xs font-bold transition-colors ${
               lang === l.code
-                ? "bg-accent text-onaccent"
+                ? "bg-brand text-onbrand"
                 : "text-subtle hover:text-fg"
             }`}
           >
@@ -42,7 +42,7 @@ export default function LanguageSwitcher({ compact = false }: { compact?: boolea
           onClick={() => setLang(l.code)}
           className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
             lang === l.code
-              ? "bg-surface text-accent"
+              ? "bg-surface text-brand"
               : "text-subtle hover:text-fg"
           }`}
         >

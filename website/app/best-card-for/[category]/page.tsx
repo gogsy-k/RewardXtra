@@ -110,9 +110,9 @@ export default async function BestCardForCategory(props: {
           <li key={r.card.id}>
             <Link
               href={`/cards/${r.card.id}`}
-              className="flex items-center gap-4 rounded-2xl border border-border bg-surface2 p-4 transition-colors hover:border-accent"
+              className="flex items-center gap-4 rounded-2xl border border-border bg-surface2 p-4 transition-colors hover:border-brand"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-accent text-sm font-black text-accent">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-brand text-sm font-black text-brand">
                 {i + 1}
               </span>
               <div className="min-w-0 flex-1">
@@ -134,7 +134,7 @@ export default async function BestCardForCategory(props: {
       <div className="mt-10 grid gap-3 sm:grid-cols-2">
         <Link
           href="/ai"
-          className="rounded-2xl border border-accent bg-surface2 p-5 transition-colors hover:bg-surface"
+          className="rounded-2xl border border-brand bg-surface2 p-5 transition-colors hover:bg-surface"
         >
           <div className="text-2xl">🤖</div>
           <div className="mt-2 font-bold">Confused? AI se poocho</div>
@@ -144,7 +144,7 @@ export default async function BestCardForCategory(props: {
         </Link>
         <Link
           href="/find-my-card"
-          className="rounded-2xl border border-border bg-surface2 p-5 transition-colors hover:border-accent"
+          className="rounded-2xl border border-border bg-surface2 p-5 transition-colors hover:border-brand"
         >
           <div className="text-2xl">🎯</div>
           <div className="mt-2 font-bold">Best Card Finder</div>
@@ -173,7 +173,7 @@ export default async function BestCardForCategory(props: {
             <Link
               key={c.slug}
               href={`/best-card-for/${c.slug}`}
-              className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-xs text-subtle transition-colors hover:border-accent hover:text-fg"
+              className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-xs text-subtle transition-colors hover:border-brand hover:text-fg"
             >
               Best for {c.label}
             </Link>

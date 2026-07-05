@@ -24,7 +24,7 @@ export function GET(req: Request) {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ fontSize: 40 }}>💳</div>
-          <div style={{ fontSize: 34, fontWeight: 900, color: "#21F1A8" }}>CardWiz</div>
+          <div style={{ fontSize: 34, fontWeight: 900, color: "#6366F1" }}>CardWiz</div>
           <div style={{ fontSize: 24, color: "#A0A0A0" }}>· News</div>
         </div>
 
@@ -34,7 +34,7 @@ export function GET(req: Request) {
             alignSelf: "flex-start",
             fontSize: 22,
             fontWeight: 700,
-            color: "#21F1A8",
+            color: "#6366F1",
             background: "rgba(52,211,153,0.12)",
             borderRadius: 999,
             padding: "8px 20px",
@@ -49,7 +49,7 @@ export function GET(req: Request) {
 
         <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 24 }}>
           <div style={{ color: "#CFCFCF" }}>India-first credit card guides</div>
-          <div style={{ color: "#21F1A8", fontWeight: 700 }}>cardwiz.in</div>
+          <div style={{ color: "#6366F1", fontWeight: 700 }}>cardwiz.in</div>
         </div>
       </div>
     ),

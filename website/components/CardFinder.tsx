@@ -64,7 +64,7 @@ export default function CardFinder({ cards }: { cards: Card[] }) {
   }, [cards, query, variant, type, bank, category, sort]);
 
   const selectCls =
-    "rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg outline-none focus:border-accent";
+    "rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg outline-none focus:border-brand";
 
   return (
     <div>
@@ -74,7 +74,7 @@ export default function CardFinder({ cards }: { cards: Card[] }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("cf_search_ph")}
-          className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-fg outline-none placeholder:text-muted focus:border-accent"
+          className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-fg outline-none placeholder:text-muted focus:border-brand"
         />
       </div>
 
@@ -93,7 +93,7 @@ export default function CardFinder({ cards }: { cards: Card[] }) {
             {variant === v && (
               <motion.span
                 layoutId="variant-pill"
-                className="absolute inset-0 rounded-lg bg-accent"
+                className="absolute inset-0 rounded-lg bg-brand"
                 transition={{ type: "spring", stiffness: 380, damping: 32 }}
               />
             )}

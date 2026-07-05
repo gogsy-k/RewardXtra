@@ -15,7 +15,7 @@ function btnCls(variant: Variant) {
   const base =
     "inline-block rounded-xl px-6 py-3.5 text-sm font-bold text-center transition-colors";
   return variant === "secondary"
-    ? `${base} border border-border text-accent hover:border-accent`
+    ? `${base} border border-border text-brand hover:border-brand`
     : `${base} bg-accent text-onaccent hover:bg-blue`;
 }
 
@@ -110,7 +110,7 @@ export default function NotifyCTA({
           placeholder="you@email.com"
           aria-invalid={showError}
           aria-describedby="notify-consent"
-          className={`flex-1 rounded-xl border bg-surface px-3 py-2.5 text-sm text-fg outline-none focus:border-accent ${
+          className={`flex-1 rounded-xl border bg-surface px-3 py-2.5 text-sm text-fg outline-none focus:border-brand ${
             showError || state === "error" ? "border-pink" : "border-border"
           }`}
         />

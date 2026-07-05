@@ -31,7 +31,7 @@ export default function CardOffers({ cardId, bank }: { cardId: string; bank?: st
     <section className="space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-black">Bank Offers</h2>
-        <Link href="/offers" className="text-xs text-accent hover:underline">See all →</Link>
+        <Link href="/offers" className="text-xs text-brand hover:underline">See all →</Link>
       </div>
       <div className="space-y-2">
         {offers.map((o) => {
@@ -40,7 +40,7 @@ export default function CardOffers({ cardId, bank }: { cardId: string; bank?: st
             <div key={o.id}
               className={`rounded-xl border bg-surface2 px-4 py-3 ${expired ? "opacity-50 border-border" : "border-border"}`}>
               <div className="text-sm font-semibold">{o.title}</div>
-              <div className="text-xs text-accent font-semibold mt-0.5">{o.discountText}</div>
+              <div className="text-xs text-brand font-semibold mt-0.5">{o.discountText}</div>
               <div className="flex gap-3 mt-1 text-xs text-muted">
                 <span>🏪 {o.merchant}</span>
                 {o.validUntil && (
@@ -53,7 +53,7 @@ export default function CardOffers({ cardId, bank }: { cardId: string; bank?: st
           );
         })}
       </div>
-      <Link href="/offers" className="inline-block text-xs text-muted hover:text-accent">
+      <Link href="/offers" className="inline-block text-xs text-muted hover:text-brand">
         + Submit a new offer for this card →
       </Link>
     </section>

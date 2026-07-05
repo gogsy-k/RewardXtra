@@ -37,13 +37,13 @@ function DropZone({ onFile }: { onFile: (f: File) => void }) {
       onDrop={(e) => { e.preventDefault(); setDragging(false); handle(e.dataTransfer.files[0]); }}
       onClick={() => inputRef.current?.click()}
       className={`cursor-pointer rounded-2xl border-2 border-dashed p-10 text-center transition-colors ${
-        dragging ? "border-accent bg-accent/5" : "border-border hover:border-accent/60"
+        dragging ? "border-brand bg-brand/5" : "border-border hover:border-brand/60"
       }`}
     >
       <div className="text-4xl mb-3">📄</div>
       <div className="font-bold mb-1">{t("up_drop")}</div>
       <p className="text-sm text-muted mb-4">{t("up_drop_sub")}</p>
-      <span className="inline-block rounded-lg border border-border px-4 py-2 text-sm font-bold hover:border-accent">
+      <span className="inline-block rounded-lg border border-border px-4 py-2 text-sm font-bold hover:border-brand">
         {t("up_choose")}
       </span>
       <input
@@ -76,7 +76,7 @@ function ReviewTable({
           type="checkbox"
           checked={allSelected}
           onChange={(e) => rows.forEach((r) => onChange(r.idx, { selected: e.target.checked }))}
-          className="h-4 w-4 accent-accent"
+          className="h-4 w-4 accent-brand"
         />
         <span className="text-xs font-bold text-muted uppercase tracking-wide">
           {t("up_selected", { sel: rows.filter((r) => r.selected).length, total: rows.length })}
@@ -90,7 +90,7 @@ function ReviewTable({
               type="checkbox"
               checked={row.selected}
               onChange={(e) => onChange(row.idx, { selected: e.target.checked })}
-              className="h-4 w-4 accent-accent shrink-0"
+              className="h-4 w-4 accent-brand shrink-0"
             />
 
             <div className="shrink-0 w-[76px] text-xs text-muted">{row.date}</div>
@@ -106,7 +106,7 @@ function ReviewTable({
             <select
               value={row.category ?? ""}
               onChange={(e) => onChange(row.idx, { category: e.target.value || null })}
-              className={`shrink-0 w-[140px] rounded-lg border bg-bg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-accent ${
+              className={`shrink-0 w-[140px] rounded-lg border bg-bg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-brand ${
                 !row.category ? "border-yellow-500 text-yellow-400" : "border-border"
               }`}
             >
@@ -203,7 +203,7 @@ export default function UploadPage() {
           <Link href="/account" className="text-xs text-muted hover:text-subtle">← Account</Link>
           <h1 className="mt-1 text-2xl font-black">{t("acc_feat_upload_t")}</h1>
         </div>
-        <div className="rounded-2xl border border-accent/30 bg-accent/5 p-8 text-center">
+        <div className="rounded-2xl border border-brand/30 bg-brand/5 p-8 text-center">
           <div className="text-4xl mb-3">💎</div>
           <div className="text-lg font-black mb-2">{t("up_premium_h")}</div>
           <p className="text-sm text-muted mb-5 max-w-sm mx-auto leading-relaxed">
@@ -239,7 +239,7 @@ export default function UploadPage() {
             <Link href="/account/transactions" className="rounded-xl bg-accent px-5 py-2.5 text-sm font-bold text-onaccent">
               {t("up_view_txns")}
             </Link>
-            <Link href="/account/savings" className="rounded-xl border border-border px-5 py-2.5 text-sm font-bold hover:border-accent">
+            <Link href="/account/savings" className="rounded-xl border border-border px-5 py-2.5 text-sm font-bold hover:border-brand">
               {t("up_view_savings")}
             </Link>
           </div>
@@ -255,7 +255,7 @@ export default function UploadPage() {
       {/* Parsing spinner */}
       {stage === "parsing" && (
         <div className="rounded-2xl border border-border bg-surface2 p-10 text-center">
-          <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-border border-t-accent mb-4" />
+          <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-border border-t-brand mb-4" />
           <div className="font-bold">{t("up_parsing")}</div>
           <p className="text-sm text-muted mt-1">{t("up_parsing_sub")}</p>
         </div>
@@ -293,7 +293,7 @@ export default function UploadPage() {
             <select
               value={cardId}
               onChange={(e) => setCardId(e.target.value)}
-              className="rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+              className="rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand"
             >
               <option value="">{t("up_select_card")}</option>
               {wallet.map((w) => (

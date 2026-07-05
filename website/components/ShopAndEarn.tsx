@@ -19,7 +19,7 @@ export default function ShopAndEarn() {
               href={s.url}
               target="_blank"
               rel="sponsored noopener noreferrer"
-              className="flex items-center gap-2.5 rounded-xl border border-border bg-bg px-4 py-3 text-sm font-bold transition-colors hover:border-accent hover:text-accent"
+              className="flex items-center gap-2.5 rounded-xl border border-border bg-bg px-4 py-3 text-sm font-bold transition-colors hover:border-brand hover:text-brand"
             >
               <span className="text-lg">{s.emoji}</span>
               <span className="truncate">{s.name}</span>

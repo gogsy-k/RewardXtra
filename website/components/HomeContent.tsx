@@ -74,7 +74,7 @@ export default function HomeContent({
     <>
       {/* HERO */}
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(ellipse_60%_60%_at_50%_0%,rgba(33,241,168,0.12),transparent_70%)]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(ellipse_60%_60%_at_50%_0%,rgba(99,102,241,0.12),transparent_70%)]" />
         <motion.div
           className="mx-auto max-w-4xl px-5 pb-16 pt-20 text-center sm:pt-28"
           variants={heroContainer}
@@ -119,7 +119,7 @@ export default function HomeContent({
             { to: 16, suffix: "", label: t("stat_sites") },
           ].map((s) => (
             <div key={s.label}>
-              <CountUp to={s.to} suffix={s.suffix} className="text-3xl font-black text-accent" />
+              <CountUp to={s.to} suffix={s.suffix} className="text-3xl font-black text-brand" />
               <div className="mt-1 text-xs text-muted">{s.label}</div>
             </div>
           ))}
@@ -137,12 +137,12 @@ export default function HomeContent({
             <Reveal key={x.href + x.tk} delay={i * 0.05} className="h-full">
               <Link
                 href={x.href}
-                className="group flex h-full flex-col rounded-2xl border border-accent/40 bg-surface2 p-6 transition hover:-translate-y-0.5 hover:border-accent"
+                className="group flex h-full flex-col rounded-2xl border border-brand/40 bg-surface2 p-6 transition hover:-translate-y-0.5 hover:border-brand"
               >
-                <Icon className="h-8 w-8 text-accent" strokeWidth={2} />
+                <Icon className="h-8 w-8 text-brand" strokeWidth={2} />
                 <h3 className="mt-3 font-bold">{t(`xp_${x.tk}_t`)}</h3>
                 <p className="mt-1.5 flex-1 text-sm leading-relaxed text-subtle">{t(`xp_${x.tk}_d`)}</p>
-                <span className="mt-4 text-sm font-bold text-accent transition-transform group-hover:translate-x-0.5">
+                <span className="mt-4 text-sm font-bold text-brand transition-transform group-hover:translate-x-0.5">
                   {t("xp_open")}
                 </span>
               </Link>
@@ -162,7 +162,7 @@ export default function HomeContent({
             return (
             <Reveal key={f.title} delay={i * 0.05} className="h-full">
               <div className="h-full rounded-2xl border border-border bg-surface2 p-6 transition-colors hover:border-border/80">
-                <Icon className="h-8 w-8 text-accent" strokeWidth={2} />
+                <Icon className="h-8 w-8 text-brand" strokeWidth={2} />
                 <h3 className="mt-3 font-bold">{f.title}</h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-subtle">{f.desc}</p>
               </div>
@@ -183,7 +183,7 @@ export default function HomeContent({
               <h2 className="text-2xl sm:text-3xl font-extrabold">{t("home_news_h")}</h2>
               <p className="mt-2 text-subtle">{t("home_news_sub")}</p>
             </div>
-            <Link href="/news" className="shrink-0 text-sm font-semibold text-accent hover:underline">
+            <Link href="/news" className="shrink-0 text-sm font-semibold text-brand hover:underline">
               {t("home_news_all")} →
             </Link>
           </div>
@@ -205,7 +205,7 @@ export default function HomeContent({
           {steps.map((s, i) => (
             <Reveal key={s.n} delay={i * 0.06}>
               <div className="text-center">
-                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full border-2 border-accent bg-surface text-lg font-extrabold text-accent">
+                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full border-2 border-brand bg-surface text-lg font-extrabold text-brand">
                   {s.n}
                 </div>
                 <h3 className="mt-4 font-bold">{s.title}</h3>

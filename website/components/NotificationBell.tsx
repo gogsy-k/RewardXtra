@@ -57,10 +57,10 @@ export default function NotificationBell() {
     <div className="relative">
       <button
         onClick={toggle}
-        className="relative flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface2 text-base transition-colors hover:border-accent"
+        className="relative flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface2 text-base transition-colors hover:border-brand"
         aria-label={t("notif_title")}
       >
-        <Bell className="h-4 w-4 text-accent" strokeWidth={2.5} />
+        <Bell className="h-4 w-4 text-brand" strokeWidth={2.5} />
         {unread > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-pink px-1 text-[10px] font-bold text-white">
             {unread > 9 ? "9+" : unread}
@@ -79,7 +79,7 @@ export default function NotificationBell() {
               <div className="max-h-80 divide-y divide-border overflow-y-auto">
                 {items.map((n) => {
                   const body = (
-                    <div className={`px-4 py-3 ${n.read ? "" : "bg-accent/5"}`}>
+                    <div className={`px-4 py-3 ${n.read ? "" : "bg-brand/5"}`}>
                       <div className="text-sm font-medium leading-snug">{label(n.message)}</div>
                       <div className="mt-0.5 text-xs text-muted">
                         {new Date(n.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}

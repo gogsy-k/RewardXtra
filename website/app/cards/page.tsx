@@ -47,7 +47,7 @@ export default async function CardsPage() {
             <Link
               key={c.slug}
               href={`/best-card-for/${c.slug}`}
-              className="rounded-full border border-border bg-surface2 px-4 py-2 text-sm text-subtle transition-colors hover:border-accent hover:text-fg"
+              className="rounded-full border border-border bg-surface2 px-4 py-2 text-sm text-subtle transition-colors hover:border-brand hover:text-fg"
             >
               <T k="ci_best_for" vars={{ cat: c.label }} />
             </Link>
@@ -62,7 +62,7 @@ export default async function CardsPage() {
             <h2 className="text-xl font-extrabold"><T k="cards_compare_h" /></h2>
             <p className="mt-1.5 text-sm text-subtle"><T k="cards_compare_p" /></p>
           </div>
-          <Link href="/compare" className="shrink-0 text-sm font-bold text-accent hover:underline">
+          <Link href="/compare" className="shrink-0 text-sm font-bold text-brand hover:underline">
             <T k="cards_compare_all" />
           </Link>
         </div>
@@ -76,7 +76,7 @@ export default async function CardsPage() {
                 <Link
                   key={`${a}-${b}`}
                   href={`/compare/${pairToSlug(a, b)}`}
-                  className="rounded-full border border-border bg-surface2 px-4 py-2 text-sm text-subtle transition-colors hover:border-accent hover:text-fg"
+                  className="rounded-full border border-border bg-surface2 px-4 py-2 text-sm text-subtle transition-colors hover:border-brand hover:text-fg"
                 >
                   {na} vs {nb}
                 </Link>

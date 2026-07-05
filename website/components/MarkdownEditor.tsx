@@ -52,7 +52,7 @@ export default function MarkdownEditor({
     <div>
       <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
         {cloudinaryEnabled && (
-          <label className="cursor-pointer rounded-lg border border-border bg-surface px-3 py-1.5 font-semibold text-accent hover:border-accent">
+          <label className="cursor-pointer rounded-lg border border-border bg-surface px-3 py-1.5 font-semibold text-brand hover:border-brand">
             📤 Upload image
             <input type="file" accept="image/*" hidden onChange={onFile} />
           </label>
@@ -60,7 +60,7 @@ export default function MarkdownEditor({
         <button
           type="button"
           onClick={onUrl}
-          className="rounded-lg border border-border bg-surface px-3 py-1.5 font-semibold text-accent hover:border-accent"
+          className="rounded-lg border border-border bg-surface px-3 py-1.5 font-semibold text-brand hover:border-brand"
         >
           🔗 Insert image URL
         </button>
@@ -74,7 +74,7 @@ export default function MarkdownEditor({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={"# Heading\n\nWrite your news here. **bold**, [link](https://…), ![image](url)…"}
-          className="min-h-[420px] w-full rounded-xl border border-border bg-surface2 p-4 font-mono text-sm text-fg outline-none focus:border-accent"
+          className="min-h-[420px] w-full rounded-xl border border-border bg-surface2 p-4 font-mono text-sm text-fg outline-none focus:border-brand"
         />
         <div className="min-h-[420px] overflow-auto rounded-xl border border-border bg-surface2 p-4">
           <PostBody content={value || "_Live preview…_"} />

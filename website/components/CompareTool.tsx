@@ -77,7 +77,7 @@ export default function CompareTool({ cards }: { cards: CompareCard[] }) {
           onChange={(e) => setQuery(e.target.value)}
           disabled={selectedIds.length >= MAX}
           placeholder={selectedIds.length >= MAX ? "Max 3 cards — ek hatao pehle" : "Search — 'HDFC', 'Amazon', 'cashback'…"}
-          className="mt-1.5 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-fg outline-none placeholder:text-muted focus:border-accent disabled:opacity-50"
+          className="mt-1.5 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-fg outline-none placeholder:text-muted focus:border-brand disabled:opacity-50"
         />
         {matches.length > 0 && (
           <ul className="mt-2 divide-y divide-border overflow-hidden rounded-xl border border-border">
@@ -92,7 +92,7 @@ export default function CompareTool({ cards }: { cards: CompareCard[] }) {
                     <span className="block truncate text-sm font-semibold">{c.name}</span>
                     <span className="block text-[11px] text-muted">{c.bank} · {c.network}</span>
                   </span>
-                  <span className="shrink-0 text-xs font-bold text-accent">+ Add</span>
+                  <span className="shrink-0 text-xs font-bold text-brand">+ Add</span>
                 </button>
               </li>
             ))}
@@ -104,7 +104,7 @@ export default function CompareTool({ cards }: { cards: CompareCard[] }) {
       {selected.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
           {selected.map((c) => (
-            <span key={c.id} className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-surface2 px-3 py-1 text-xs font-semibold">
+            <span key={c.id} className="inline-flex items-center gap-1.5 rounded-full border border-brand/40 bg-surface2 px-3 py-1 text-xs font-semibold">
               {c.name}
               <button type="button" onClick={() => remove(c.id)} aria-label={`Remove ${c.name}`} className="text-pink hover:opacity-70">×</button>
             </span>
@@ -128,7 +128,7 @@ export default function CompareTool({ cards }: { cards: CompareCard[] }) {
                 <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-muted"> </th>
                 {selected.map((c) => (
                   <th key={c.id} className="px-4 py-3 text-left">
-                    <Link href={`/cards/${c.id}`} className="text-sm font-black hover:text-accent">{c.name}</Link>
+                    <Link href={`/cards/${c.id}`} className="text-sm font-black hover:text-brand">{c.name}</Link>
                     <div className="text-[11px] font-normal text-muted">{c.bank}</div>
                   </th>
                 ))}
@@ -167,7 +167,7 @@ export default function CompareTool({ cards }: { cards: CompareCard[] }) {
       )}
 
       <div className="mt-6 text-center">
-        <Link href="/ai" className="text-sm font-bold text-accent hover:underline">
+        <Link href="/ai" className="text-sm font-bold text-brand hover:underline">
           Confused? AI se poocho kaunsa behtar hai →
         </Link>
       </div>

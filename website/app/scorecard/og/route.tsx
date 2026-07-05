@@ -31,7 +31,7 @@ export function GET(req: Request) {
       >
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontSize: 40, fontWeight: 900, color: "#21F1A8" }}>💳 CardWiz</div>
+          <div style={{ fontSize: 40, fontWeight: 900, color: "#6366F1" }}>💳 CardWiz</div>
           <div style={{ fontSize: 26, color: "#A0A0A0" }}>{period} · Savings Scorecard</div>
         </div>
 
@@ -62,7 +62,7 @@ export function GET(req: Request) {
         {/* Footer */}
         <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 26 }}>
           <div style={{ color: "#CFCFCF" }}>Apna scorecard banao 👉</div>
-          <div style={{ color: "#21F1A8", fontWeight: 700 }}>cardwiz.in</div>
+          <div style={{ color: "#6366F1", fontWeight: 700 }}>cardwiz.in</div>
         </div>
       </div>
     ),

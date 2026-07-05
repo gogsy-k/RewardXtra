@@ -25,7 +25,7 @@ function OfferCard({ offer }: { offer: Offer }) {
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-sm font-bold leading-snug">{offer.title}</div>
-          <div className="text-xs text-accent font-semibold mt-0.5">{offer.discountText}</div>
+          <div className="text-xs text-brand font-semibold mt-0.5">{offer.discountText}</div>
         </div>
         {expired && (
           <span className="shrink-0 text-[10px] font-bold rounded-full bg-red-400/15 text-red-400 px-2 py-0.5">{t("off_expired")}</span>
@@ -35,7 +35,7 @@ function OfferCard({ offer }: { offer: Offer }) {
         <span>🏪 {offer.merchant}</span>
         {offer.bank && <span>🏦 {offer.bank}</span>}
         {offer.cardId && (
-          <Link href={`/cards/${offer.cardId}`} className="text-accent hover:underline">
+          <Link href={`/cards/${offer.cardId}`} className="text-brand hover:underline">
             {t("off_view_card")}
           </Link>
         )}
@@ -91,7 +91,7 @@ function SubmitForm({ onSubmitted }: { onSubmitted: (o: Offer) => void }) {
         <div className="font-bold text-sm">{t("off_done_h")}</div>
         <p className="text-xs text-subtle mt-1">{t("off_done_p")}</p>
         <button onClick={() => { setDone(false); setForm({ merchant: "", bank: "", title: "", discountText: "", validUntil: "" }); }}
-          className="mt-3 text-xs text-accent hover:underline">
+          className="mt-3 text-xs text-brand hover:underline">
           {t("off_submit_another")}
         </button>
       </div>
@@ -108,12 +108,12 @@ function SubmitForm({ onSubmitted }: { onSubmitted: (o: Offer) => void }) {
           <label className="block text-xs text-muted mb-1">{t("off_merchant")}</label>
           <input value={form.merchant} onChange={(e) => set("merchant", e.target.value)} required
             placeholder={t("off_merchant_ph")} maxLength={100}
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent" />
+            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand" />
         </div>
         <div>
           <label className="block text-xs text-muted mb-1">{t("off_bank")}</label>
           <select value={form.bank} onChange={(e) => set("bank", e.target.value)}
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent">
+            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand">
             <option value="">{t("off_select_bank")}</option>
             {BANKS.map((b) => <option key={b} value={b}>{b}</option>)}
           </select>
@@ -122,18 +122,18 @@ function SubmitForm({ onSubmitted }: { onSubmitted: (o: Offer) => void }) {
           <label className="block text-xs text-muted mb-1">{t("off_title")}</label>
           <input value={form.title} onChange={(e) => set("title", e.target.value)} required
             placeholder={t("off_title_ph")} maxLength={120}
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent" />
+            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand" />
         </div>
         <div>
           <label className="block text-xs text-muted mb-1">{t("off_discount")}</label>
           <input value={form.discountText} onChange={(e) => set("discountText", e.target.value)} required
             placeholder={t("off_discount_ph")} maxLength={200}
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent" />
+            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand" />
         </div>
         <div>
           <label className="block text-xs text-muted mb-1">{t("off_valid_until")}</label>
           <input type="date" value={form.validUntil} onChange={(e) => set("validUntil", e.target.value)}
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent" />
+            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand" />
         </div>
       </div>
 
@@ -174,12 +174,12 @@ export default function OffersPage() {
       {/* Bank filter */}
       <div className="flex flex-wrap gap-2">
         <button onClick={() => setBank("")}
-          className={`rounded-full px-3 py-1.5 text-xs font-bold border transition-colors ${!bank ? "bg-accent text-onaccent border-accent" : "border-border hover:border-accent"}`}>
+          className={`rounded-full px-3 py-1.5 text-xs font-bold border transition-colors ${!bank ? "bg-brand text-onbrand border-brand" : "border-border hover:border-brand"}`}>
           {t("off_all")}
         </button>
         {BANKS.slice(0, 8).map((b) => (
           <button key={b} onClick={() => setBank(b === bank ? "" : b)}
-            className={`rounded-full px-3 py-1.5 text-xs font-bold border transition-colors ${bank === b ? "bg-accent text-onaccent border-accent" : "border-border hover:border-accent"}`}>
+            className={`rounded-full px-3 py-1.5 text-xs font-bold border transition-colors ${bank === b ? "bg-brand text-onbrand border-brand" : "border-border hover:border-brand"}`}>
             {b}
           </button>
         ))}

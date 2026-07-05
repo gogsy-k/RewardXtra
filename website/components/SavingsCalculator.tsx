@@ -45,7 +45,7 @@ export default function SavingsCalculator({ cards }: { cards: Card[] }) {
   return (
     <div className="mx-auto w-full max-w-sm rounded-2xl border border-border bg-surface2 p-5 text-left shadow-2xl">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-bold text-accent">{t("sc_h")}</span>
+        <span className="text-sm font-bold text-brand">{t("sc_h")}</span>
         <span className="rounded-full bg-green/15 px-2 py-0.5 text-[10px] font-bold text-green">{t("sc_live")}</span>
       </div>
 
@@ -62,7 +62,7 @@ export default function SavingsCalculator({ cards }: { cards: Card[] }) {
             aria-pressed={category === p.category}
             className={`rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ${
               category === p.category
-                ? "bg-accent text-onaccent"
+                ? "bg-brand text-onbrand"
                 : "border border-border text-subtle hover:text-fg"
             }`}
           >
@@ -88,7 +88,7 @@ export default function SavingsCalculator({ cards }: { cards: Card[] }) {
           value={amount}
           onChange={(e) => setAmount(Number(e.target.value))}
           aria-valuetext={fmt(amount)}
-          className="mt-2 w-full cursor-pointer accent-[var(--color-accent)]"
+          className="mt-2 w-full cursor-pointer accent-[var(--color-brand)]"
         />
       </div>
 

@@ -20,7 +20,7 @@ export default function OgImage() {
           color: "#F5F5F5",
         }}
       >
-        <div style={{ fontSize: 72, fontWeight: 900, color: "#21F1A8" }}>💳 CardWiz</div>
+        <div style={{ fontSize: 72, fontWeight: 900, color: "#6366F1" }}>💳 CardWiz</div>
         <div style={{ marginTop: 24, fontSize: 44, fontWeight: 700, lineHeight: 1.2, maxWidth: 900 }}>
           India ka smart credit &amp; debit card reward finder
         </div>
@@ -33,7 +33,7 @@ export default function OgImage() {
             display: "flex",
             gap: 16,
             fontSize: 24,
-            color: "#21F1A8",
+            color: "#6366F1",
           }}
         >
           <span>cardwiz.in</span>

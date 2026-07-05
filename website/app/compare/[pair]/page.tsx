@@ -171,14 +171,14 @@ export default async function ComparePage(props: { params: Promise<{ pair: strin
       </div>
 
       {/* Verdict */}
-      <div className="mt-6 rounded-2xl border border-accent bg-surface2 p-5">
+      <div className="mt-6 rounded-2xl border border-brand bg-surface2 p-5">
         <h2 className="font-extrabold">Verdict</h2>
         <p className="mt-1.5 text-sm leading-relaxed text-subtle">{verdict}</p>
         <div className="mt-4 flex flex-wrap gap-3">
-          <Link href={`/cards/${a.id}`} className="rounded-lg border border-border px-4 py-2 text-sm font-bold text-accent hover:border-accent">
+          <Link href={`/cards/${a.id}`} className="rounded-lg border border-border px-4 py-2 text-sm font-bold text-brand hover:border-brand">
             {a.name} detail →
           </Link>
-          <Link href={`/cards/${b.id}`} className="rounded-lg border border-border px-4 py-2 text-sm font-bold text-accent hover:border-accent">
+          <Link href={`/cards/${b.id}`} className="rounded-lg border border-border px-4 py-2 text-sm font-bold text-brand hover:border-brand">
             {b.name} detail →
           </Link>
         </div>
@@ -247,7 +247,7 @@ async function OtherPairs({ cards, current }: { cards: Card[]; current: string }
             <Link
               key={`${x}-${y}`}
               href={`/compare/${pairToSlug(x, y)}`}
-              className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-xs text-subtle transition-colors hover:border-accent hover:text-fg"
+              className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-xs text-subtle transition-colors hover:border-brand hover:text-fg"
             >
               {cx.name} vs {cy.name}
             </Link>

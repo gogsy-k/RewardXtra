@@ -39,19 +39,19 @@ export default function CardItem({ card }: { card: Card }) {
   return (
     <Link
       href={`/cards/${card.id}`}
-      className="group flex flex-col rounded-2xl border border-border bg-surface2 p-5 transition duration-200 hover:-translate-y-0.5 hover:border-accent"
+      className="group flex flex-col rounded-2xl border border-border bg-surface2 p-5 transition duration-200 hover:-translate-y-0.5 hover:border-brand"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2.5">
           {/* Bank monogram chip */}
-          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-[11px] font-black text-accent">
+          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-[11px] font-black text-brand">
             {monogram(card.bank)}
           </span>
           <div className="min-w-0">
             <div className="text-xs font-semibold uppercase tracking-wide text-muted">
               {card.bank} · {card.network}
             </div>
-            <h3 className="mt-0.5 font-bold leading-snug group-hover:text-accent">{card.name}</h3>
+            <h3 className="mt-0.5 font-bold leading-snug group-hover:text-brand">{card.name}</h3>
           </div>
         </div>
         <span className={`shrink-0 rounded-md px-2 py-1 text-[10px] font-bold ${TYPE_BADGE[card.type]}`}>
@@ -76,7 +76,7 @@ export default function CardItem({ card }: { card: Card }) {
       {(bestFor || cats.length > 0) && (
         <div className="mt-4 flex flex-wrap items-center gap-1.5">
           {bestFor && (
-            <span className="rounded-full border border-accent/40 bg-accent/10 px-2.5 py-0.5 text-[10px] font-bold text-accent">
+            <span className="rounded-full border border-brand/40 bg-brand/10 px-2.5 py-0.5 text-[10px] font-bold text-brand">
               ★ {t("ci_best_for", { cat: catLabel(bestFor) })}
             </span>
           )}

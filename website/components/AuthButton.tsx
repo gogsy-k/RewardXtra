@@ -25,7 +25,7 @@ export default function AuthButton() {
       <div className="relative">
         <button
           onClick={() => setOpen((o) => !o)}
-          className="flex items-center gap-2 rounded-full border border-border bg-surface2 py-1 pl-1 pr-2.5 transition-colors hover:border-accent"
+          className="flex items-center gap-2 rounded-full border border-border bg-surface2 py-1 pl-1 pr-2.5 transition-colors hover:border-brand"
         >
           <Avatar user={user} size={26} />
           <span className="hidden text-sm font-semibold sm:block">{firstName}</span>
@@ -99,7 +99,7 @@ export default function AuthButton() {
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="rounded-lg border border-border px-3.5 py-1.5 text-sm font-semibold text-accent transition-colors hover:border-accent"
+        className="rounded-lg border border-border px-3.5 py-1.5 text-sm font-semibold text-brand transition-colors hover:border-brand"
       >
         {t("auth_signin")}
       </button>
@@ -127,7 +127,7 @@ function PlanPill({ plan, label }: { plan: "free" | "premium" | "pro"; label: st
   return (
     <span
       className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-        plan === "premium" || plan === "pro" ? "bg-accent text-onaccent" : "border border-border text-subtle"
+        plan === "premium" || plan === "pro" ? "bg-brand text-onbrand" : "border border-border text-subtle"
       }`}
     >
       {label}

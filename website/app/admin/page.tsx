@@ -33,7 +33,7 @@ function Dashboard() {
         {(["news", "offers"] as Tab[]).map((t) => (
           <button key={t} onClick={() => setTab(t)}
             className={`rounded-lg px-4 py-2 text-sm font-bold capitalize transition-colors ${
-              tab === t ? "bg-accent text-onaccent" : "border border-border hover:border-accent"
+              tab === t ? "bg-brand text-onbrand" : "border border-border hover:border-brand"
             }`}>
             {t === "news" ? "News" : "Offers Moderation"}
           </button>
@@ -146,7 +146,7 @@ function NewsTab() {
         <div className="flex gap-2">
           <button
             onClick={() => setShowSched((v) => !v)}
-            className="rounded-xl border border-border px-4 py-2 text-sm font-bold text-accent transition-colors hover:border-accent"
+            className="rounded-xl border border-border px-4 py-2 text-sm font-bold text-brand transition-colors hover:border-brand"
           >
             ⏰ Schedule drafts
           </button>
@@ -159,7 +159,7 @@ function NewsTab() {
 
       {/* Bulk scheduler — drip drafts out automatically (no cron; they auto-go-live) */}
       {showSched && (
-        <div className="space-y-3 rounded-2xl border border-accent/40 bg-surface2 p-4">
+        <div className="space-y-3 rounded-2xl border border-brand/40 bg-surface2 p-4">
           <div className="text-sm font-bold">⏰ Bulk schedule — drip your drafts out</div>
           <p className="text-xs text-muted">
             Write many posts as <b>drafts</b>, then select them here, pick a start time + gap, and they publish
@@ -270,7 +270,7 @@ function OffersTab() {
           {(["pending", "approved", "rejected"] as const).map((s) => (
             <button key={s} onClick={() => setFilter(s)}
               className={`rounded-lg px-3 py-1.5 text-xs font-bold capitalize transition-colors ${
-                filter === s ? "bg-accent text-onaccent" : "border border-border hover:border-accent"
+                filter === s ? "bg-brand text-onbrand" : "border border-border hover:border-brand"
               }`}>
               {s}
             </button>
@@ -288,7 +288,7 @@ function OffersTab() {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="font-semibold text-sm">{o.title}</div>
-                <div className="text-xs text-accent font-semibold mt-0.5">{o.discountText}</div>
+                <div className="text-xs text-brand font-semibold mt-0.5">{o.discountText}</div>
                 <div className="flex flex-wrap gap-x-3 mt-1.5 text-xs text-muted">
                   <span>🏪 {o.merchant}</span>
                   {o.bank && <span>🏦 {o.bank}</span>}
