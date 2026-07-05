@@ -485,7 +485,7 @@ function money(n) {
 // 🔧 TODO(PUBLISH): publish se pehle false karo. Merchant page ke DevTools Console me
 // "[CardWiz]" filter karke amount/offer detection ka pura trace dikhta hai.
 const CW_DEBUG = true;
-const CW_BUILD = 'l4-v30'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
+const CW_BUILD = 'l4-v31'; // console me dikhega — isse pata chalega kaunsa build chal raha hai
 function dbg(...args) {
   if (!CW_DEBUG) return;
   const tag = (typeof window !== 'undefined' && window.top !== window) ? 'frame' : 'widget';
@@ -838,6 +838,7 @@ function renderMinChip() {
   shadow.innerHTML = `
     <style>
       :host { all: initial; }
+      * { -webkit-user-select: none; user-select: none; } /* no text copy from the widget */
       .chip { width:46px; height:46px; border-radius:50%; background:#0C1018; color:#E8ECF4;
               border:1px solid #2A3450; box-shadow:0 6px 20px rgba(0,0,0,.4); cursor:pointer;
               display:flex; align-items:center; justify-content:center; font-size:20px; }
@@ -938,6 +939,8 @@ function renderWidget(site, amount, ownedRanked, otherOffers, myCards, notOwned,
   shadow.innerHTML = `
     <style>
       :host { all: initial; }
+      * { -webkit-user-select: none; user-select: none; } /* no text copy from the widget */
+      input, textarea { -webkit-user-select: text; user-select: text; }
       @keyframes cwSlideIn { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
       .box {
         font-family: 'Segoe UI', system-ui, sans-serif;

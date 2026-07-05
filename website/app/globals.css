@@ -44,6 +44,19 @@ body {
   background: var(--color-bg);
   color: var(--color-fg);
   font-family: var(--font-sans);
+  /* No text selection / copy anywhere on the site (form fields exempted below). */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Keep form fields usable — typing and selecting inside inputs still works. */
+input, textarea, select, [contenteditable="true"], [contenteditable=""] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }
 
 /* Display font for headings; body stays Geist. Numbers in headings cap at Space Grotesk 700. */
