@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "CardWiz — Best Card & Bill Reminders",
+  "name": "CardWiz — Best Card & Cashback at Checkout",
   "version": "1.0",
-  "description": "Checkout pe sabse zyada bachat dene wala card bataye + bill due-date reminders. Privacy-first, India-first. | cardwiz.in",
+  "description": "Best card for max cashback at checkout, 195+ cards compared, bank offers + bill reminders. Privacy-first, India-first.",
   "author": "CardWiz",
   "homepage_url": "https://cardwiz.in",
   "action": {
