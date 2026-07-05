@@ -546,10 +546,63 @@
       button:hover, .mycard:hover, .bestcard:hover,
       .mycard-actions button:hover, .bc-actions button:hover { transform: none !important; }
     }
+
+    /* ---------- Header row + help button ---------- */
+    .head-row { display: flex; align-items: center; justify-content: space-between; }
+    .help-btn {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      background: #1A2336; border: 1px solid #2A3450; color: #8A93AC;
+      font-size: 12px; font-weight: 700; cursor: pointer; line-height: 1;
+    }
+    .help-btn:hover { color: #E8ECF4; border-color: #6366F1; }
+
+    /* ---------- First-run onboarding: spotlight tour ---------- */
+    /* Root blocks stray clicks (transparent); the ring provides the dim via a
+       huge spread box-shadow, leaving the target element brightly "cut out". */
+    .onb-root { position: fixed; inset: 0; z-index: 1000; }
+    .onb-ring {
+      position: fixed; border-radius: 10px; border: 2px solid #6366F1;
+      box-shadow: 0 0 0 9999px rgba(6, 9, 15, 0.82), 0 0 0 4px rgba(99, 102, 241, 0.35);
+      pointer-events: none;
+      transition: top .22s ease, left .22s ease, width .22s ease, height .22s ease;
+    }
+    .onb-tip {
+      position: fixed; width: 300px; max-width: calc(100vw - 24px);
+      background: linear-gradient(160deg, #1C2740, #12192A);
+      border: 1px solid #2E3A57; border-radius: 12px; padding: 13px 14px 12px;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+    }
+    .onb-arrow {
+      position: absolute; top: -7px; width: 12px; height: 12px;
+      background: #1C2740; border-left: 1px solid #2E3A57; border-top: 1px solid #2E3A57;
+      transform: rotate(45deg);
+    }
+    .onb-tip.above .onb-arrow { top: auto; bottom: -7px; transform: rotate(225deg); }
+    .onb-skip {
+      position: absolute; top: 10px; right: 12px;
+      background: none; border: none; color: #8A93AC;
+      font-size: 11px; font-weight: 600; cursor: pointer;
+    }
+    .onb-skip:hover { color: #E8ECF4; }
+    .onb-title { font-size: 14px; font-weight: 800; color: #E8ECF4; margin: 2px 44px 6px 0; }
+    .onb-desc { font-size: 12px; line-height: 1.5; color: #B7C0D4; }
+    .onb-tip-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
+    .onb-dots { display: flex; gap: 5px; }
+    .onb-dot { width: 6px; height: 6px; border-radius: 50%; background: #2E3A57; transition: all .2s; }
+    .onb-dot.active { background: #6366F1; width: 16px; border-radius: 3px; }
+    .onb-navbtns { display: flex; gap: 6px; }
+    .onb-btn { border: none; border-radius: 8px; padding: 7px 13px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .onb-btn-primary { background: #6366F1; color: #fff; }
+    .onb-btn-primary:hover { background: #4F52E0; }
+    .onb-btn-ghost { background: #222C42; color: #B7C0D4; }
+    .onb-btn-ghost:hover { color: #E8ECF4; }
   </style>
 </head>
 <body>
-  <h2><img src="icon.svg" alt="" width="22" height="22" style="display:block">CardWiz</h2>
+  <div class="head-row">
+    <h2><img src="icon.svg" alt="" width="22" height="22" style="display:block">CardWiz</h2>
+    <button id="onbHelp" class="help-btn" aria-label="Help" title="How CardWiz works">?</button>
+  </div>
   <nav>
     <button data-view="best" class="active" data-i18n="nav_best">🏆 Top Cards</button>
     <button data-view="mycards" data-i18n="nav_mycards">💼 My Cards</button>
@@ -776,6 +829,24 @@
 
   <div id="cardInfoModal" class="modal-overlay" hidden>
     <div class="modal" id="cardInfoBox"></div>
+  </div>
+
+  <!-- ============ First-run onboarding guide (spotlight tour) ============ -->
+  <div id="onboard" class="onb-root" hidden>
+    <div class="onb-ring" id="onbRing"></div>
+    <div class="onb-tip" id="onbTip">
+      <div class="onb-arrow" id="onbArrow"></div>
+      <button id="onbSkip" class="onb-skip">Skip</button>
+      <div class="onb-title" id="onbTitle"></div>
+      <div class="onb-desc" id="onbDesc"></div>
+      <div class="onb-tip-foot">
+        <div class="onb-dots" id="onbDots"></div>
+        <div class="onb-navbtns">
+          <button id="onbBack" class="onb-btn onb-btn-ghost" hidden>Back</button>
+          <button id="onbNext" class="onb-btn onb-btn-primary">Next</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="debug.js"></script>

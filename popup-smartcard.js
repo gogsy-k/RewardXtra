@@ -153,6 +153,10 @@ async function init() {
   els.formLast4.addEventListener('input', () => {
     els.formLast4.value = els.formLast4.value.replace(/\D/g, '').slice(0, 4);
   });
+
+  // First-run guide — wire listeners, then show it on the very first open.
+  wireOnboard();
+  maybeShowOnboard();
 }
 
 function switchView(view) {
@@ -1623,6 +1627,109 @@ function setLanguage(code) {
   renderBestCards();                  // dynamic (JS-generated) strings
   renderMyCards();
   renderMore();                       // account/sync/premium/analytics dynamic strings
+  renderOnboard();                    // re-translate the guide if it's open
+}
+
+// ---------- First-run onboarding: spotlight tour (points at real UI) ----------
+// Each step highlights an actual nav tab with a ring + arrow + tooltip, so the
+// user learns by seeing where things are. Shown once (chrome.storage flag);
+// header "?" replays it. Fully i18n'd.
+const ONBOARD_FLAG = 'cwOnboardedV1';
+const ONBOARD_STEPS = [
+  { sel: 'nav button[data-view="best"]',    t: 'ob_s1_t', d: 'ob_s1_d' },
+  { sel: 'nav button[data-view="mycards"]', t: 'ob_s2_t', d: 'ob_s2_d' },
+  { sel: 'nav button[data-view="suggest"]', t: 'ob_s3_t', d: 'ob_s3_d' },
+  { sel: 'nav button[data-view="more"]',    t: 'ob_s4_t', d: 'ob_s4_d' },
+];
+let onbStep = 0;
+
+// Place the spotlight ring on the target and the tooltip near it (below if it
+// fits, else above), with the arrow pointing at the target's centre.
+function positionOnboard(target) {
+  const ring = $('onbRing'), tip = $('onbTip'), arrow = $('onbArrow');
+  const vw = window.innerWidth, vh = window.innerHeight;
+  if (!target) {                    // no anchor -> centre the tip, hide the ring
+    ring.style.display = 'none';
+    arrow.style.display = 'none';
+    tip.classList.remove('above');
+    tip.style.left = Math.max(12, (vw - tip.offsetWidth) / 2) + 'px';
+    tip.style.top = Math.max(12, (vh - tip.offsetHeight) / 2) + 'px';
+    return;
+  }
+  ring.style.display = '';
+  arrow.style.display = '';
+  const r = target.getBoundingClientRect();
+  const pad = 4;
+  ring.style.top = (r.top - pad) + 'px';
+  ring.style.left = (r.left - pad) + 'px';
+  ring.style.width = (r.width + pad * 2) + 'px';
+  ring.style.height = (r.height + pad * 2) + 'px';
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  const cx = r.left + r.width / 2;
+  const left = Math.min(Math.max(cx - tw / 2, 12), vw - tw - 12);
+  let top, above = false;
+  if (r.bottom + 12 + th <= vh - 8) { top = r.bottom + 12; }
+  else if (r.top - 12 - th >= 8) { top = r.top - 12 - th; above = true; }
+  else { top = Math.max(8, Math.min(r.bottom + 12, vh - th - 8)); }
+  tip.classList.toggle('above', above);
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+  arrow.style.left = Math.min(Math.max(cx - left - 6, 12), tw - 18) + 'px';
+}
+
+function renderOnboard() {
+  const overlay = $('onboard');
+  if (!overlay || overlay.hidden) return; // only paint when the guide is open
+  const T = (k) => CardWizI18n.t(k);
+  const total = ONBOARD_STEPS.length;
+  onbStep = Math.max(0, Math.min(onbStep, total - 1));
+  const step = ONBOARD_STEPS[onbStep];
+  $('onbTitle').textContent = T(step.t);
+  $('onbDesc').textContent = T(step.d);
+  $('onbSkip').textContent = T('ob_skip');
+  $('onbBack').hidden = onbStep === 0;
+  $('onbBack').textContent = T('ob_back');
+  $('onbNext').textContent = onbStep === total - 1 ? T('ob_start') : T('ob_next');
+  const dots = $('onbDots');
+  dots.innerHTML = '';
+  for (let i = 0; i < total; i++) {
+    const dot = document.createElement('span');
+    dot.className = 'onb-dot' + (i === onbStep ? ' active' : '');
+    dots.appendChild(dot);
+  }
+  // Position after content is set so tip dimensions are measured correctly.
+  const target = step.sel ? document.querySelector(step.sel) : null;
+  requestAnimationFrame(() => positionOnboard(target));
+}
+
+function openOnboard() {
+  onbStep = 0;
+  const overlay = $('onboard');
+  if (!overlay) return;
+  overlay.hidden = false;
+  renderOnboard();
+}
+
+// Close + remember (so it never auto-shows again). Replay via the header "?".
+function closeOnboard() {
+  const overlay = $('onboard');
+  if (overlay) overlay.hidden = true;
+  if (typeof chrome !== 'undefined' && chrome.storage) chrome.storage.local.set({ [ONBOARD_FLAG]: true });
+}
+
+function wireOnboard() {
+  const next = $('onbNext'), back = $('onbBack'), skip = $('onbSkip'), help = $('onbHelp');
+  if (next) next.addEventListener('click', () => {
+    if (onbStep < ONBOARD_STEPS.length - 1) { onbStep++; renderOnboard(); } else closeOnboard();
+  });
+  if (back) back.addEventListener('click', () => { if (onbStep > 0) { onbStep--; renderOnboard(); } });
+  if (skip) skip.addEventListener('click', closeOnboard);
+  if (help) { help.title = CardWizI18n.t('ob_help'); help.addEventListener('click', openOnboard); }
+}
+
+function maybeShowOnboard() {
+  if (typeof chrome === 'undefined' || !chrome.storage) return;
+  chrome.storage.local.get([ONBOARD_FLAG], (r) => { if (!r[ONBOARD_FLAG]) openOnboard(); });
 }
 
 init();
