@@ -30,11 +30,11 @@ function portfolioScore(walletCards, allCatalogCards) {
         (c) =>
           c.fuelSurchargeWaiver ||
           (c.benefits && c.benefits.fuelSurchargeWaiver) ||
-          c.rules.some((r) => r.categories && r.categories.includes('fuel'))
+          (c.rules || []).some((r) => r.categories && r.categories.includes('fuel'))
       );
     } else {
       covered = myCards.some((c) =>
-        c.rules.some(
+        (c.rules || []).some(
           (r) =>
             r.categories &&
             r.categories.some((rc) => cat.cats.includes(rc)) &&
@@ -57,7 +57,7 @@ function portfolioScore(walletCards, allCatalogCards) {
       if (gap.id === 'lounge' || gap.id === 'fuel') return 1;
       return Math.max(
         0,
-        ...c.rules
+        ...(c.rules || [])
           .filter((r) => r.categories && r.categories.some((rc) => gap.cats.includes(rc)))
           .map((r) => r.effectiveRate || 0)
       );
@@ -67,7 +67,7 @@ function portfolioScore(walletCards, allCatalogCards) {
       .filter((c) => {
         if (gap.id === 'lounge') return c.benefits && c.benefits.loungePerYear;
         if (gap.id === 'fuel')   return c.fuelSurchargeWaiver || (c.benefits && c.benefits.fuelSurchargeWaiver);
-        return c.rules.some(
+        return (c.rules || []).some(
           (r) => r.categories && r.categories.some((rc) => gap.cats.includes(rc)) && (r.effectiveRate || 0) > (c.baseRate || 0)
         );
       })

@@ -15,6 +15,15 @@ const SUITES = [
   'sync.test.js',
   'razorpay.test.js',
   'cardreferral.test.js',
+  // ---- launch-day QA expansion ----
+  'portfolioscore.test.js',
+  'catalog.test.js',
+  'auth.test.js',
+  'sync-network.test.js',
+  'affiliate-apply.test.js',
+  'offer-attribution.test.js',
+  'bestcards-integrity.test.js',
+  'gaps.test.js',
 ];
 
 let totalPassed = 0;
