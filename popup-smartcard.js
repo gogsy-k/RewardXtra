@@ -74,16 +74,12 @@ async function init() {
   await loadWaiverSpend();
   await loadBenefitsUsed();
   await loadPremium();
-  // Network/auth/sync/payment — fail-soft. A backend hiccup here must NOT blank
-  // the popup or block the first-run guide (guide fires after the renders below).
-  try {
-    await loadAuth(); // Phase 8: signed-in user + plan sync (backend)
-    await loadSyncPref(); // Phase 10: cloud sync pref (default ON)
-    if (currentUser && syncEnabled) await doSyncNow(); // pull+merge+push cards
-    if (currentUser && !isPremium) await autoVerifyPayment(); // Phase 11: pending payment auto-detect
-  } catch (e) {
-    if (typeof CardWizDebug !== 'undefined') CardWizDebug.cwlog('popup', 'init network step failed (non-fatal):', e && e.message);
-  }
+  await loadSyncPref(); // cloud-sync pref (chrome.storage — local, fast)
+
+  // ---- Paint IMMEDIATELY from local data (bundled/cached catalog + chrome.storage
+  //      wallet). No network on this path, so the popup is instant even when the
+  //      backend is cold-starting. Sign-in + cloud sync run in the background
+  //      (refreshFromBackend, kicked off at the end of init).
   if (typeof CardWizDebug !== 'undefined') {
     const withL4 = myCards.filter((c) => String(c.last4 || '').replace(/\D/g, '').length === 4).length;
     CardWizDebug.cwlog('popup', 'boot | cards:', myCards.length, '| with-last4:', withL4,
@@ -163,6 +159,25 @@ async function init() {
   // Data is loaded + rendered by now — safe to show the first-run guide.
   wireOnboard();
   maybeShowOnboard();
+
+  // Sign-in, cloud card sync, and pending-payment check happen in the BACKGROUND
+  // so a cold/slow backend can never delay the popup's first paint.
+  refreshFromBackend();
+}
+
+// Background network refresh — never blocks the initial paint. Fail-soft; once it
+// resolves, re-render the views whose data may have changed (synced cards, plan).
+async function refreshFromBackend() {
+  try {
+    await loadAuth(); // Phase 8: signed-in user + plan (backend)
+    if (currentUser && syncEnabled) await doSyncNow(); // Phase 10: pull+merge+push cards
+    if (currentUser && !isPremium) await autoVerifyPayment(); // Phase 11: pending payment
+  } catch (e) {
+    if (typeof CardWizDebug !== 'undefined') CardWizDebug.cwlog('popup', 'background refresh failed (non-fatal):', e && e.message);
+  }
+  renderMyCards();  // cloud sync may have merged cards
+  renderFeatured(); // plan/premium may have changed
+  if (!$('view-more').hidden) renderMore(); // account/sync status, only if that tab is open
 }
 
 function switchView(view) {

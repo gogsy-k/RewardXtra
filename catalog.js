@@ -4,10 +4,10 @@
  * Card data ab bundled file mein nahi, backend (Supabase) mein hai.
  * Wahan update karo, extension automatically new data le lega — bina redeploy ke.
  *
- * Flow (network-first — hamesha taaza data, koi staleness nahi):
- *   1. Backend GET /catalog se fresh fetch karo aur cache update karo.
- *   2. Backend down: pichla cached data use karo (offline fallback).
- *   3. Kabhi backend nahi mila: bundled data/cards.json pe fallback.
+ * Flow (cache-first — popup instant, network kabhi block nahi karta):
+ *   1. Version-checked cache (ya pehli baar bundled data/cards.json) TURANT do.
+ *   2. Background me GET /catalog se refresh karke cache update karo (agli baar
+ *      taaza data). Cold/slow backend popup ko slow nahi karega.
  *
  * CardWizAuth.BACKEND_URL se backend URL milta hai (auth.js pehle load honi chahiye).
  * Content scripts mein auth.js nahi hoti, wahan CATALOG_BACKEND_URL use hota hai.
@@ -72,29 +72,33 @@ function clearLegacy() {
   });
 }
 
-// Network-first: hamesha backend se taaza data lo. Cache sirf offline fallback ke
-// liye — isse stale-format (purana schema) data kabhi serve nahi hoga.
+// Cache-first for SPEED: popup ko kabhi network pe wait nahi karwana.
+//   1. Version-checked cache (ya pehli baar bundled file) TURANT return karo.
+//   2. Background me backend se refresh karke cache update karo — agli baar
+//      taaza data mil jayega. (getCached purana-schema cache reject karta hai,
+//      isliye cache-first safe hai; bundled file hamesha current schema.)
+// Isse cold/slow backend (Render free-tier) popup ko slow nahi karega.
 async function load() {
   await clearLegacy();
-
-  // 1. Backend se fresh fetch (primary).
-  //    cache:'no-store' => browser ka HTTP cache bypass karo (warna purana
-  //    response 1hr tak chipak jaata hai, chrome.storage clear karne pe bhi).
-  try {
-    const res = await fetch(`${backendUrl()}/catalog`, { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      await setCache(data); // offline ke liye cache update
-      return data;
-    }
-  } catch (_) { /* backend unreachable — neeche fallback */ }
-
-  // 2. Cache fallback (backend down, par pehle kabhi fetch hua tha)
   const cached = await getCached();
-  if (cached) return cached;
+  const data = cached || await fetchBundled();
+  refreshCacheInBackground(); // fire-and-forget — kabhi await nahi
+  return data;
+}
 
-  // 3. Bundled fallback (kabhi backend nahi mila — bundled file always has cardType)
-  return fetchBundled();
+// Best-effort backend refresh (timeout-bounded) jo cache ko update karta hai.
+// KABHI await nahi hota — cold/slow backend popup ko block na kare.
+function refreshCacheInBackground() {
+  if (typeof fetch === 'undefined') return;
+  let ctrl = null;
+  try { ctrl = new AbortController(); } catch (_) { /* no AbortController */ }
+  const to = ctrl ? setTimeout(() => ctrl.abort(), 4000) : null;
+  const opts = ctrl ? { cache: 'no-store', signal: ctrl.signal } : { cache: 'no-store' };
+  fetch(`${backendUrl()}/catalog`, opts)
+    .then((res) => (res && res.ok ? res.json() : null))
+    .then((data) => { if (data) return setCache(data); })
+    .catch(() => { /* offline/slow/timeout — cache jaisa hai waisa rehne do */ })
+    .finally(() => { if (to) clearTimeout(to); });
 }
 
 const catalogApi = { load, invalidate };
