@@ -26,11 +26,17 @@ export type ReviewsResponse = {
 };
 
 export async function getReviews(cardId: string): Promise<ReviewsResponse> {
-  const res = await fetch(`${BACKEND_URL}/reviews?cardId=${encodeURIComponent(cardId)}`, {
-    next: { revalidate: 60 },
-  });
-  if (!res.ok) return { reviews: [], avgRating: null, count: 0 };
-  return res.json() as Promise<ReviewsResponse>;
+  const empty: ReviewsResponse = { reviews: [], avgRating: null, count: 0 };
+  try {
+    const res = await fetch(`${BACKEND_URL}/reviews?cardId=${encodeURIComponent(cardId)}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return empty;
+    return (await res.json()) as ReviewsResponse;
+  } catch {
+    // Backend hiccup / Render cold-start → fail-soft so the page never crashes (section hides).
+    return empty;
+  }
 }
 
 /** Recent reviews across all cards — pricing-page social proof. */

@@ -27,10 +27,15 @@ export async function getOffers(params?: { bank?: string; cardId?: string }): Pr
   const qs = new URLSearchParams();
   if (params?.bank)   qs.set("bank", params.bank);
   if (params?.cardId) qs.set("cardId", params.cardId);
-  const res = await fetch(`${BACKEND_URL}/offers${qs.size ? "?" + qs : ""}`, { cache: "no-store" });
-  if (!res.ok) return [];
-  const data = await res.json();
-  return data.offers ?? [];
+  try {
+    const res = await fetch(`${BACKEND_URL}/offers${qs.size ? "?" + qs : ""}`, { cache: "no-store" });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.offers ?? [];
+  } catch {
+    // Backend hiccup / Render cold-start → fail-soft so the page never crashes (section hides).
+    return [];
+  }
 }
 
 export async function submitOffer(payload: SubmitOfferPayload): Promise<Offer> {

@@ -20,7 +20,8 @@ const config = {
   // Website origins jo backend ko call kar sakti hain (CORS). Prod defaults baked in;
   // ALLOWED_WEB_ORIGINS env se override ho sakta hai.
   allowedWebOrigins: (process.env.ALLOWED_WEB_ORIGINS ||
-    'https://cardwiz.in,https://www.cardwiz.in,http://localhost:3000')
+    // localhost:3001 = website dev port when :3000 is taken by the backend (dev CORS fix).
+    'https://cardwiz.in,https://www.cardwiz.in,http://localhost:3000,http://localhost:3001')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean),
