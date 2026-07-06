@@ -20,7 +20,7 @@ At checkout, CardWiz shows which of your cards earns the most rewards + live ban
 CardWiz tells you which credit or debit card to use at checkout so you never leave rewards on the table — built for India.
 
 WHAT IT DOES
-• Best card at checkout — on Amazon, Flipkart, Myntra, Ajio, Nykaa, Swiggy, Zomato and more, a small panel shows which of YOUR cards gives the most cashback/reward on that exact amount, and surfaces the live bank offer on the page.
+• Best card at checkout — on major Indian shopping, food-delivery and travel sites, a small panel shows which of YOUR cards gives the most cashback/reward on that exact amount, and surfaces the live bank offer on the page.
 • Compare 195+ Indian cards — a curated "Top Cards" list scored by real value, plus a Suggest tool: pick a category and amount, get the best card instantly.
 • Your card wallet — add your cards by bank + last 4 digits only. We NEVER ask for or store the full card number or CVV.
 • Bill reminders — get a notification before your card's due date so you never miss a payment.
